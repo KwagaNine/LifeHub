@@ -51,9 +51,9 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
       return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50 text-slate-800 font-sans">
           <AlertTriangle className="w-16 h-16 text-rose-500 mb-4" />
-          <h1 className="text-2xl font-bold mb-2">Что-то пошло не так</h1>
+          <h1 className="text-2xl font-bold mb-2">Р§С‚Рѕ-С‚Рѕ РїРѕС€Р»Рѕ РЅРµ С‚Р°Рє</h1>
           <p className="text-slate-500 text-center mb-6 max-w-xs">
-            Приложение столкнулось с критической ошибкой.
+            РџСЂРёР»РѕР¶РµРЅРёРµ СЃС‚РѕР»РєРЅСѓР»РѕСЃСЊ СЃ РєСЂРёС‚РёС‡РµСЃРєРѕР№ РѕС€РёР±РєРѕР№.
           </p>
           <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 w-full overflow-auto max-h-60 mb-6">
             <code className="text-xs text-rose-600 font-mono">
@@ -64,7 +64,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
             onClick={() => window.location.reload()}
             className="bg-slate-900 text-white px-6 py-3 rounded-full font-bold active:scale-95 transition-transform"
           >
-            Перезагрузить
+            РџРµСЂРµР·Р°РіСЂСѓР·РёС‚СЊ
           </button>
         </div>
       );
@@ -97,7 +97,7 @@ const useLocalStorage = <T,>(key: string, initialValue: T): [T, (value: T | ((va
   return [storedValue, setValue];
 };
 
-// --- Дизайн-система ---
+// --- Р”РёР·Р°Р№РЅ-СЃРёСЃС‚РµРјР° ---
 const THEME = {
   background: 'bg-slate-50',
   card: 'bg-white rounded-[32px] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)]',
@@ -119,7 +119,7 @@ const THEME = {
 //   ai: { text: 'text-indigo-500', bg: 'bg-indigo-50', icon: 'bg-indigo-100' }
 // };
 
-// --- Вспомогательные компоненты ---
+// --- Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚С‹ ---
 interface PressableScaleProps {
   children: ReactNode;
   onClick?: () => void;
@@ -166,7 +166,7 @@ const SectionHeader = ({ title, actionLabel, onAction }: SectionHeaderProps) => 
   </div>
 );
 
-// --- Типы ---
+// --- РўРёРїС‹ ---
 interface Transaction {
   id: string;
   amount: number;
@@ -233,23 +233,23 @@ const BudgetTab = () => {
   const [monthLimit, setMonthLimit] = useLocalStorage('lifehub_limit', 60000);
   const [selectedDate, setSelectedDate] = useState(new Date().getDate());
 
-  const [categories, setCategories] = useState(['Еда', 'Транспорт', 'Дом', 'Развлечения', 'Здоровье', 'Шоппинг', 'Фриланс', 'Разное']);
+  const [categories, setCategories] = useState(['Р•РґР°', 'РўСЂР°РЅСЃРїРѕСЂС‚', 'Р”РѕРј', 'Р Р°Р·РІР»РµС‡РµРЅРёСЏ', 'Р—РґРѕСЂРѕРІСЊРµ', 'РЁРѕРїРїРёРЅРі', 'Р¤СЂРёР»Р°РЅСЃ', 'Р Р°Р·РЅРѕРµ']);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
 
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('lifehub_transactions', [
-    { id: '1', amount: 850, title: 'Продукты', type: 'expense', category: 'Еда', date: new Date().getDate(), createdAt: Date.now() },
-    { id: '2', amount: 25000, title: 'Зарплата', type: 'income', category: 'Фриланс', date: new Date().getDate() - 1, createdAt: Date.now() - 86400000 },
+    { id: '1', amount: 850, title: 'РџСЂРѕРґСѓРєС‚С‹', type: 'expense', category: 'Р•РґР°', date: new Date().getDate(), createdAt: Date.now() },
+    { id: '2', amount: 25000, title: 'Р—Р°СЂРїР»Р°С‚Р°', type: 'income', category: 'Р¤СЂРёР»Р°РЅСЃ', date: new Date().getDate() - 1, createdAt: Date.now() - 86400000 },
   ]);
   const [bills, setBills] = useLocalStorage<Bill[]>('lifehub_bills', [
-    { id: '1', title: 'Аренда квартиры', amount: 35000, date: 1, paid: false, createdAt: Date.now() },
-    { id: '2', title: 'Интернет', amount: 750, date: 15, paid: true, createdAt: Date.now() },
+    { id: '1', title: 'РђСЂРµРЅРґР° РєРІР°СЂС‚РёСЂС‹', amount: 35000, date: 1, paid: false, createdAt: Date.now() },
+    { id: '2', title: 'РРЅС‚РµСЂРЅРµС‚', amount: 750, date: 15, paid: true, createdAt: Date.now() },
   ]);
   const [goals, setGoals] = useLocalStorage<Goal[]>('lifehub_goals', [
     { id: '1', title: 'MacBook Pro', targetAmount: 200000, currentAmount: 85000, date: '2024-06-01', icon: 'Target', color: 'bg-emerald-500', createdAt: Date.now() },
   ]);
 
-  const [newTrans, setNewTrans] = useState({ amount: '', title: '', type: 'expense' as 'expense' | 'income', category: 'Еда' });
+  const [newTrans, setNewTrans] = useState({ amount: '', title: '', type: 'expense' as 'expense' | 'income', category: 'Р•РґР°' });
   const [newBill, setNewBill] = useState({ title: '', amount: '', date: '' });
   const [goalForm, setGoalForm] = useState({ title: '', targetAmount: '', currentAmount: '', date: '' });
   const [manualBalanceInput, setManualBalanceInput] = useState('');
@@ -276,12 +276,12 @@ const BudgetTab = () => {
 
   const getFinancialAdvice = async () => {
     setLoading(true);
-    // Симуляция AI ответа
+    // РЎРёРјСѓР»СЏС†РёСЏ AI РѕС‚РІРµС‚Р°
     await new Promise(resolve => setTimeout(resolve, 1500));
     const advices = [
-      `При текущих расходах ${spentThisMonth.toLocaleString()} ₽ вы используете ${Math.round(progress)}% лимита. Попробуйте сократить расходы на категорию "${expensesByCategory[0]?.name || 'Разное'}" для экономии.`,
-      `Ваш баланс ${totalBalance.toLocaleString()} ₽ позволяет откладывать по ${Math.round((totalBalance - spentThisMonth) / 30)} ₽ в день. Создайте автоматический перевод на накопления.`,
-      `Совет: ведите учёт мелких расходов — они часто составляют до 30% бюджета. Ваш прогресс отличный!`
+      `РџСЂРё С‚РµРєСѓС‰РёС… СЂР°СЃС…РѕРґР°С… ${spentThisMonth.toLocaleString()} в‚Ѕ РІС‹ РёСЃРїРѕР»СЊР·СѓРµС‚Рµ ${Math.round(progress)}% Р»РёРјРёС‚Р°. РџРѕРїСЂРѕР±СѓР№С‚Рµ СЃРѕРєСЂР°С‚РёС‚СЊ СЂР°СЃС…РѕРґС‹ РЅР° РєР°С‚РµРіРѕСЂРёСЋ "${expensesByCategory[0]?.name || 'Р Р°Р·РЅРѕРµ'}" РґР»СЏ СЌРєРѕРЅРѕРјРёРё.`,
+      `Р’Р°С€ Р±Р°Р»Р°РЅСЃ ${totalBalance.toLocaleString()} в‚Ѕ РїРѕР·РІРѕР»СЏРµС‚ РѕС‚РєР»Р°РґС‹РІР°С‚СЊ РїРѕ ${Math.round((totalBalance - spentThisMonth) / 30)} в‚Ѕ РІ РґРµРЅСЊ. РЎРѕР·РґР°Р№С‚Рµ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРёР№ РїРµСЂРµРІРѕРґ РЅР° РЅР°РєРѕРїР»РµРЅРёСЏ.`,
+      `РЎРѕРІРµС‚: РІРµРґРёС‚Рµ СѓС‡С‘С‚ РјРµР»РєРёС… СЂР°СЃС…РѕРґРѕРІ вЂ” РѕРЅРё С‡Р°СЃС‚Рѕ СЃРѕСЃС‚Р°РІР»СЏСЋС‚ РґРѕ 30% Р±СЋРґР¶РµС‚Р°. Р’Р°С€ РїСЂРѕРіСЂРµСЃСЃ РѕС‚Р»РёС‡РЅС‹Р№!`
     ];
     setAdvice(advices[Math.floor(Math.random() * advices.length)]);
     setLoading(false);
@@ -331,7 +331,7 @@ const BudgetTab = () => {
     }
 
     setAddTransOpen(false);
-    setNewTrans({ amount: '', title: '', type: 'expense', category: 'Еда' });
+    setNewTrans({ amount: '', title: '', type: 'expense', category: 'Р•РґР°' });
   };
 
   const handleAddBill = () => {
@@ -426,13 +426,13 @@ const BudgetTab = () => {
       {/* HEADER */}
       <header className="pt-4 flex justify-between items-end">
         <div>
-          <p className={THEME.text.label}>Текущий баланс</p>
+          <p className={THEME.text.label}>РўРµРєСѓС‰РёР№ Р±Р°Р»Р°РЅСЃ</p>
           <div className="flex items-center gap-3 mt-1">
             <div className="flex items-baseline gap-2">
               <h1 className="text-4xl font-extrabold text-slate-800 tracking-tighter">
                 {totalBalance.toLocaleString('ru-RU')}
               </h1>
-              <span className="text-2xl font-bold text-slate-400">₽</span>
+              <span className="text-2xl font-bold text-slate-400">в‚Ѕ</span>
             </div>
             <div className="flex gap-2">
               <PressableScale onClick={() => { setManualBalanceInput(String(totalBalance)); setEditBalanceOpen(true); }} className="bg-white p-2.5 rounded-2xl border border-slate-100 shadow-sm text-slate-400 hover:text-slate-600">
@@ -457,8 +457,8 @@ const BudgetTab = () => {
             <Receipt className="w-7 h-7 text-emerald-500" />
           </div>
           <div>
-            <h3 className="text-slate-800 font-bold text-xl leading-tight">Операции</h3>
-            <p className="text-slate-400 text-[11px] mt-1.5 font-bold tracking-widest uppercase">История операций</p>
+            <h3 className="text-slate-800 font-bold text-xl leading-tight">РћРїРµСЂР°С†РёРё</h3>
+            <p className="text-slate-400 text-[11px] mt-1.5 font-bold tracking-widest uppercase">РСЃС‚РѕСЂРёСЏ РѕРїРµСЂР°С†РёР№</p>
           </div>
         </PressableScale>
 
@@ -471,8 +471,8 @@ const BudgetTab = () => {
             <Landmark className="w-7 h-7 text-violet-500" />
           </div>
           <div>
-            <h3 className="text-slate-800 font-bold text-xl leading-tight">Платежи</h3>
-            <p className="text-slate-400 text-[11px] mt-1.5 font-bold tracking-widest uppercase">Кредиты и счета</p>
+            <h3 className="text-slate-800 font-bold text-xl leading-tight">РџР»Р°С‚РµР¶Рё</h3>
+            <p className="text-slate-400 text-[11px] mt-1.5 font-bold tracking-widest uppercase">РљСЂРµРґРёС‚С‹ Рё СЃС‡РµС‚Р°</p>
           </div>
         </PressableScale>
       </div>
@@ -483,13 +483,13 @@ const BudgetTab = () => {
           <div className="flex justify-between items-end mb-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <p className={THEME.text.label}>Лимит расходов</p>
+                <p className={THEME.text.label}>Р›РёРјРёС‚ СЂР°СЃС…РѕРґРѕРІ</p>
                 <PressableScale onClick={() => { setManualLimitInput(String(monthLimit)); setEditLimitOpen(true); }} className="bg-slate-100 p-1 rounded-full text-slate-400 hover:text-slate-600">
                   <Pencil className="w-3 h-3" />
                 </PressableScale>
               </div>
               <p className="text-2xl font-bold text-slate-800">
-                {spentThisMonth.toLocaleString()} <span className="text-slate-300 text-lg font-medium">/ {monthLimit.toLocaleString()} ₽</span>
+                {spentThisMonth.toLocaleString()} <span className="text-slate-300 text-lg font-medium">/ {monthLimit.toLocaleString()} в‚Ѕ</span>
               </p>
             </div>
             <span className="text-sm font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-xl">{Math.round(progress)}%</span>
@@ -505,7 +505,7 @@ const BudgetTab = () => {
 
       {/* Goals Section */}
       <section>
-        <SectionHeader title="Финансовые цели" actionLabel="+ Цель" onAction={openAddGoalModal} />
+        <SectionHeader title="Р¤РёРЅР°РЅСЃРѕРІС‹Рµ С†РµР»Рё" actionLabel="+ Р¦РµР»СЊ" onAction={openAddGoalModal} />
         <div className="flex gap-4 overflow-x-auto pb-6 pt-2 px-2 -mx-2">
           {goals.length > 0 ? goals.map((goal) => {
             const dailySave = calculateDailySavings(goal.targetAmount, goal.currentAmount, goal.date);
@@ -527,7 +527,7 @@ const BudgetTab = () => {
                 <h3 className="font-bold text-slate-800 text-xl mb-1">{goal.title}</h3>
                 <div className="flex items-baseline gap-1.5 mb-4">
                   <span className="text-base font-bold text-slate-600">{goal.currentAmount.toLocaleString()}</span>
-                  <span className="text-xs font-bold text-slate-300">/ {goal.targetAmount.toLocaleString()} ₽</span>
+                  <span className="text-xs font-bold text-slate-300">/ {goal.targetAmount.toLocaleString()} в‚Ѕ</span>
                 </div>
 
                 <div className="w-full h-2.5 bg-slate-50 rounded-full overflow-hidden mb-4 border border-slate-100/50">
@@ -537,14 +537,14 @@ const BudgetTab = () => {
                 <div className="flex items-center gap-2.5 bg-slate-50 p-3 rounded-2xl border border-slate-100/50">
                   <Clock className="w-4 h-4 text-slate-400" />
                   <p className="text-xs font-medium text-slate-500">
-                    По <span className="font-bold text-slate-800">{dailySave} ₽</span> в день
+                    РџРѕ <span className="font-bold text-slate-800">{dailySave} в‚Ѕ</span> РІ РґРµРЅСЊ
                   </p>
                 </div>
               </PressableScale>
             );
           }) : (
             <div className="px-2">
-              <p className="text-slate-400 text-sm">Нет целей. Создайте первую!</p>
+              <p className="text-slate-400 text-sm">РќРµС‚ С†РµР»РµР№. РЎРѕР·РґР°Р№С‚Рµ РїРµСЂРІСѓСЋ!</p>
             </div>
           )}
 
@@ -562,7 +562,7 @@ const BudgetTab = () => {
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setGoalModalOpen(false)} />
           <div className="bg-white w-full max-w-md mx-auto rounded-t-[40px] p-8 space-y-6 shadow-2xl relative animate-in slide-in-from-bottom duration-300">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-slate-900">{editingGoalId ? 'Редактирование' : 'Новая цель'}</h2>
+              <h2 className="text-2xl font-bold text-slate-900">{editingGoalId ? 'Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ' : 'РќРѕРІР°СЏ С†РµР»СЊ'}</h2>
               {editingGoalId && (
                 <button onClick={handleDeleteGoal} className="bg-rose-50 p-3 rounded-full text-rose-500 hover:bg-rose-100 transition-colors">
                   <Trash2 className="w-5 h-5" />
@@ -572,16 +572,16 @@ const BudgetTab = () => {
 
             <div className="space-y-5">
               <div className="space-y-2">
-                <label className={THEME.text.label}>На что копим?</label>
+                <label className={THEME.text.label}>РќР° С‡С‚Рѕ РєРѕРїРёРј?</label>
                 <input
                   value={goalForm.title}
                   onChange={e => setGoalForm({ ...goalForm, title: e.target.value })}
-                  placeholder="Напр: MacBook Pro"
+                  placeholder="РќР°РїСЂ: MacBook Pro"
                   className="w-full bg-slate-50 border-none rounded-2xl py-4 px-5 font-bold text-slate-800 focus:ring-2 ring-emerald-100 transition-all outline-none"
                 />
               </div>
               <div className="space-y-2">
-                <label className={THEME.text.label}>Сумма цели</label>
+                <label className={THEME.text.label}>РЎСѓРјРјР° С†РµР»Рё</label>
                 <input
                   type="number"
                   value={goalForm.targetAmount}
@@ -592,7 +592,7 @@ const BudgetTab = () => {
               </div>
               {editingGoalId && (
                 <div className="space-y-2">
-                  <label className={THEME.text.label}>Накоплено</label>
+                  <label className={THEME.text.label}>РќР°РєРѕРїР»РµРЅРѕ</label>
                   <input
                     type="number"
                     value={goalForm.currentAmount}
@@ -603,7 +603,7 @@ const BudgetTab = () => {
                 </div>
               )}
               <div className="space-y-2">
-                <label className={THEME.text.label}>Дата цели</label>
+                <label className={THEME.text.label}>Р”Р°С‚Р° С†РµР»Рё</label>
                 <input
                   type="date"
                   value={goalForm.date}
@@ -615,7 +615,7 @@ const BudgetTab = () => {
 
             <PressableScale onClick={handleSaveGoal} className="w-full pt-2">
               <div className="bg-emerald-500 h-14 rounded-[28px] flex items-center justify-center shadow-xl shadow-emerald-200">
-                <span className="text-white font-bold text-lg">{editingGoalId ? 'Сохранить' : 'Создать'}</span>
+                <span className="text-white font-bold text-lg">{editingGoalId ? 'РЎРѕС…СЂР°РЅРёС‚СЊ' : 'РЎРѕР·РґР°С‚СЊ'}</span>
               </div>
             </PressableScale>
           </div>
@@ -627,7 +627,7 @@ const BudgetTab = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
           <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onClick={() => setEditBalanceOpen(false)} />
           <div className="bg-white w-full max-w-xs rounded-[32px] p-6 shadow-2xl relative animate-in zoom-in-95 duration-300">
-            <h2 className="text-lg font-bold text-center text-slate-800 mb-6">Баланс</h2>
+            <h2 className="text-lg font-bold text-center text-slate-800 mb-6">Р‘Р°Р»Р°РЅСЃ</h2>
             <input
               type="number"
               value={manualBalanceInput}
@@ -636,7 +636,7 @@ const BudgetTab = () => {
               autoFocus
             />
             <div className="flex gap-3">
-              <button onClick={() => setEditBalanceOpen(false)} className="flex-1 h-12 bg-slate-50 rounded-2xl font-bold text-slate-400 hover:text-slate-600 transition-colors">Отмена</button>
+              <button onClick={() => setEditBalanceOpen(false)} className="flex-1 h-12 bg-slate-50 rounded-2xl font-bold text-slate-400 hover:text-slate-600 transition-colors">РћС‚РјРµРЅР°</button>
               <button onClick={handleManualBalanceUpdate} className="flex-1 h-12 bg-slate-900 rounded-2xl font-bold text-white shadow-lg shadow-slate-200">OK</button>
             </div>
           </div>
@@ -648,7 +648,7 @@ const BudgetTab = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
           <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onClick={() => setEditLimitOpen(false)} />
           <div className="bg-white w-full max-w-xs rounded-[32px] p-6 shadow-2xl relative animate-in zoom-in-95 duration-300">
-            <h2 className="text-lg font-bold text-center text-slate-800 mb-6">Лимит</h2>
+            <h2 className="text-lg font-bold text-center text-slate-800 mb-6">Р›РёРјРёС‚</h2>
             <input
               type="number"
               value={manualLimitInput}
@@ -657,7 +657,7 @@ const BudgetTab = () => {
               autoFocus
             />
             <div className="flex gap-3">
-              <button onClick={() => setEditLimitOpen(false)} className="flex-1 h-12 bg-slate-50 rounded-2xl font-bold text-slate-400 hover:text-slate-600 transition-colors">Отмена</button>
+              <button onClick={() => setEditLimitOpen(false)} className="flex-1 h-12 bg-slate-50 rounded-2xl font-bold text-slate-400 hover:text-slate-600 transition-colors">РћС‚РјРµРЅР°</button>
               <button onClick={handleManualLimitUpdate} className="flex-1 h-12 bg-slate-900 rounded-2xl font-bold text-white shadow-lg shadow-slate-200">OK</button>
             </div>
           </div>
@@ -671,8 +671,8 @@ const BudgetTab = () => {
           <div className="bg-white w-full max-w-md mx-auto rounded-t-[40px] h-[85vh] shadow-2xl relative animate-in slide-in-from-bottom duration-500 flex flex-col overflow-hidden">
             <div className="flex justify-between items-center p-6 pb-2 shrink-0 z-10 bg-white">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Статистика</h2>
-                <p className="text-slate-500 text-sm font-medium">Расходы по категориям</p>
+                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">РЎС‚Р°С‚РёСЃС‚РёРєР°</h2>
+                <p className="text-slate-500 text-sm font-medium">Р Р°СЃС…РѕРґС‹ РїРѕ РєР°С‚РµРіРѕСЂРёСЏРј</p>
               </div>
               <button onClick={() => setStatsOpen(false)} className="bg-slate-50 p-2 rounded-full text-slate-400 hover:bg-slate-100 transition-colors"><X className="w-5 h-5" /></button>
             </div>
@@ -682,7 +682,7 @@ const BudgetTab = () => {
                   <div className="flex justify-between items-center mb-3 relative z-10">
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-indigo-500" />
-                      <span className="text-xs font-black text-indigo-900 uppercase tracking-widest">AI Анализ</span>
+                      <span className="text-xs font-black text-indigo-900 uppercase tracking-widest">AI РђРЅР°Р»РёР·</span>
                     </div>
                     <PressableScale onClick={getFinancialAdvice} disabled={loading}>
                       <div className="bg-white p-2 rounded-full shadow-sm text-indigo-500">
@@ -691,7 +691,7 @@ const BudgetTab = () => {
                     </PressableScale>
                   </div>
                   <p className="text-indigo-900 text-sm leading-relaxed font-semibold relative z-10">
-                    {advice || "Нажмите на палочку, чтобы получить анализ ваших расходов от искусственного интеллекта ✨"}
+                    {advice || "РќР°Р¶РјРёС‚Рµ РЅР° РїР°Р»РѕС‡РєСѓ, С‡С‚РѕР±С‹ РїРѕР»СѓС‡РёС‚СЊ Р°РЅР°Р»РёР· РІР°С€РёС… СЂР°СЃС…РѕРґРѕРІ РѕС‚ РёСЃРєСѓСЃСЃС‚РІРµРЅРЅРѕРіРѕ РёРЅС‚РµР»Р»РµРєС‚Р° вњЁ"}
                   </p>
                   <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-indigo-100 rounded-full blur-2xl opacity-50" />
                 </div>
@@ -704,7 +704,7 @@ const BudgetTab = () => {
                           <div className="flex justify-between items-end px-1">
                             <span className="font-bold text-slate-700">{item.name}</span>
                             <div className="text-right flex items-baseline gap-2">
-                              <span className="font-bold text-slate-900">{item.amount.toLocaleString()} ₽</span>
+                              <span className="font-bold text-slate-900">{item.amount.toLocaleString()} в‚Ѕ</span>
                               <span className="text-xs text-slate-400 font-bold bg-slate-50 px-1.5 py-0.5 rounded-md">{percentage}%</span>
                             </div>
                           </div>
@@ -717,7 +717,7 @@ const BudgetTab = () => {
                   ) : (
                     <div className="py-20 text-center text-slate-300">
                       <PieChart className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                      <p className="font-medium">Нет данных о расходах</p>
+                      <p className="font-medium">РќРµС‚ РґР°РЅРЅС‹С… Рѕ СЂР°СЃС…РѕРґР°С…</p>
                     </div>
                   )}
                 </div>
@@ -734,15 +734,15 @@ const BudgetTab = () => {
           <div className="bg-white w-full max-w-md mx-auto rounded-t-[40px] h-[90vh] shadow-2xl relative animate-in slide-in-from-bottom duration-500 flex flex-col overflow-hidden">
             <div className="flex justify-between items-center p-6 pb-2 shrink-0 z-10 bg-white">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Операции</h2>
-                <p className="text-slate-500 text-sm font-medium">История и Календарь</p>
+                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">РћРїРµСЂР°С†РёРё</h2>
+                <p className="text-slate-500 text-sm font-medium">РСЃС‚РѕСЂРёСЏ Рё РљР°Р»РµРЅРґР°СЂСЊ</p>
               </div>
               <button onClick={() => setDailyOpen(false)} className="bg-slate-100 p-2 rounded-full text-slate-400 hover:bg-slate-200 transition-colors"><X className="w-5 h-5" /></button>
             </div>
             <div className="flex-1 overflow-y-auto px-6 pb-32 pt-2">
               <div className="bg-slate-50 rounded-[32px] p-5 mb-6">
                 <div className="grid grid-cols-7 gap-1">
-                  {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(d => (
+                  {['РџРЅ', 'Р’С‚', 'РЎСЂ', 'Р§С‚', 'РџС‚', 'РЎР±', 'Р’СЃ'].map(d => (
                     <div key={d} className="h-8 flex items-center justify-center text-[10px] font-black text-slate-300 uppercase">{d}</div>
                   ))}
                   {days.map(d => {
@@ -762,7 +762,7 @@ const BudgetTab = () => {
                 </div>
               </div>
               <div className="space-y-3 pb-4">
-                <SectionHeader title={`Операции за ${selectedDate} число`} />
+                <SectionHeader title={`РћРїРµСЂР°С†РёРё Р·Р° ${selectedDate} С‡РёСЃР»Рѕ`} />
                 {filteredTransactions.length > 0 ? (
                   filteredTransactions.map(t => (
                     <div key={t.id} className="flex justify-between items-center p-4 bg-white border border-slate-100 rounded-[24px] shadow-sm">
@@ -776,14 +776,14 @@ const BudgetTab = () => {
                         </div>
                       </div>
                       <span className={`font-mono font-bold ${t.type === 'income' ? 'text-emerald-500' : 'text-slate-900'}`}>
-                        {t.type === 'income' ? '+' : '-'}{t.amount} ₽
+                        {t.type === 'income' ? '+' : '-'}{t.amount} в‚Ѕ
                       </span>
                     </div>
                   ))
                 ) : (
                   <div className="flex flex-col items-center justify-center h-40 text-slate-300 border-2 border-dashed border-slate-100 rounded-[32px]">
                     <Receipt className="w-10 h-10 mb-2 opacity-50" />
-                    <p className="text-sm font-medium">Нет операций</p>
+                    <p className="text-sm font-medium">РќРµС‚ РѕРїРµСЂР°С†РёР№</p>
                   </div>
                 )}
               </div>
@@ -792,7 +792,7 @@ const BudgetTab = () => {
               <PressableScale onClick={() => setAddTransOpen(true)} className="w-full">
                 <div className="bg-slate-900 h-14 rounded-[28px] flex items-center justify-center shadow-xl shadow-slate-200">
                   <Plus className="w-6 h-6 text-white mr-2" />
-                  <span className="text-white font-bold text-lg">Добавить операцию</span>
+                  <span className="text-white font-bold text-lg">Р”РѕР±Р°РІРёС‚СЊ РѕРїРµСЂР°С†РёСЋ</span>
                 </div>
               </PressableScale>
             </div>
@@ -806,18 +806,18 @@ const BudgetTab = () => {
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setAddTransOpen(false)} />
           <div className="bg-white w-full max-w-md mx-auto rounded-t-[40px] p-8 space-y-6 shadow-2xl relative animate-in slide-in-from-bottom duration-300">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-slate-900">Новая операция</h2>
+              <h2 className="text-2xl font-bold text-slate-900">РќРѕРІР°СЏ РѕРїРµСЂР°С†РёСЏ</h2>
               <button onClick={() => setAddTransOpen(false)} className="bg-slate-50 p-2 rounded-full text-slate-400"><X className="w-5 h-5" /></button>
             </div>
 
             <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl">
-              <button onClick={() => setNewTrans({ ...newTrans, type: 'expense' })} className={`flex-1 py-3 rounded-xl font-bold transition-all ${newTrans.type === 'expense' ? 'bg-white shadow text-slate-900' : 'text-slate-400'}`}>Расход</button>
-              <button onClick={() => setNewTrans({ ...newTrans, type: 'income' })} className={`flex-1 py-3 rounded-xl font-bold transition-all ${newTrans.type === 'income' ? 'bg-white shadow text-slate-900' : 'text-slate-400'}`}>Доход</button>
+              <button onClick={() => setNewTrans({ ...newTrans, type: 'expense' })} className={`flex-1 py-3 rounded-xl font-bold transition-all ${newTrans.type === 'expense' ? 'bg-white shadow text-slate-900' : 'text-slate-400'}`}>Р Р°СЃС…РѕРґ</button>
+              <button onClick={() => setNewTrans({ ...newTrans, type: 'income' })} className={`flex-1 py-3 rounded-xl font-bold transition-all ${newTrans.type === 'income' ? 'bg-white shadow text-slate-900' : 'text-slate-400'}`}>Р”РѕС…РѕРґ</button>
             </div>
 
             <div className="space-y-5">
               <div className="space-y-2">
-                <label className={THEME.text.label}>Сумма</label>
+                <label className={THEME.text.label}>РЎСѓРјРјР°</label>
                 <input
                   type="number"
                   value={newTrans.amount}
@@ -827,16 +827,16 @@ const BudgetTab = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className={THEME.text.label}>Название</label>
+                <label className={THEME.text.label}>РќР°Р·РІР°РЅРёРµ</label>
                 <input
                   value={newTrans.title}
                   onChange={e => setNewTrans({ ...newTrans, title: e.target.value })}
-                  placeholder="Напр: Продукты"
+                  placeholder="РќР°РїСЂ: РџСЂРѕРґСѓРєС‚С‹"
                   className="w-full bg-slate-50 border-none rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
                 />
               </div>
               <div className="space-y-2">
-                <label className={THEME.text.label}>Категория</label>
+                <label className={THEME.text.label}>РљР°С‚РµРіРѕСЂРёСЏ</label>
                 <div className="flex flex-wrap gap-2">
                   {categories.map(cat => (
                     <button
@@ -856,7 +856,7 @@ const BudgetTab = () => {
                       <input
                         value={newCategoryName}
                         onChange={e => setNewCategoryName(e.target.value)}
-                        placeholder="Новая"
+                        placeholder="РќРѕРІР°СЏ"
                         className="w-24 px-3 py-2 rounded-xl bg-slate-100 text-sm font-bold outline-none"
                         autoFocus
                       />
@@ -871,7 +871,7 @@ const BudgetTab = () => {
 
             <PressableScale onClick={handleAddTransaction} className="w-full pt-2">
               <div className={`h-14 rounded-[28px] flex items-center justify-center shadow-xl ${newTrans.type === 'expense' ? 'bg-rose-500 shadow-rose-200' : 'bg-emerald-500 shadow-emerald-200'}`}>
-                <span className="text-white font-bold text-lg">Добавить</span>
+                <span className="text-white font-bold text-lg">Р”РѕР±Р°РІРёС‚СЊ</span>
               </div>
             </PressableScale>
           </div>
@@ -885,8 +885,8 @@ const BudgetTab = () => {
           <div className="bg-white w-full max-w-md mx-auto rounded-t-[40px] h-[85vh] shadow-2xl relative animate-in slide-in-from-bottom duration-500 flex flex-col overflow-hidden">
             <div className="flex justify-between items-center p-6 pb-2 shrink-0 z-10 bg-white">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Платежи</h2>
-                <p className="text-slate-500 text-sm font-medium">Регулярные счета</p>
+                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">РџР»Р°С‚РµР¶Рё</h2>
+                <p className="text-slate-500 text-sm font-medium">Р РµРіСѓР»СЏСЂРЅС‹Рµ СЃС‡РµС‚Р°</p>
               </div>
               <button onClick={() => setBillsOpen(false)} className="bg-slate-100 p-2 rounded-full text-slate-400 hover:bg-slate-200 transition-colors"><X className="w-5 h-5" /></button>
             </div>
@@ -901,11 +901,11 @@ const BudgetTab = () => {
                         </button>
                         <div>
                           <h3 className={`font-bold ${bill.paid ? 'text-emerald-700 line-through' : 'text-slate-800'}`}>{bill.title}</h3>
-                          <p className="text-xs text-slate-400 font-medium">Каждое {bill.date} число</p>
+                          <p className="text-xs text-slate-400 font-medium">РљР°Р¶РґРѕРµ {bill.date} С‡РёСЃР»Рѕ</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`font-mono font-bold ${bill.paid ? 'text-emerald-600' : 'text-slate-900'}`}>{bill.amount.toLocaleString()} ₽</span>
+                        <span className={`font-mono font-bold ${bill.paid ? 'text-emerald-600' : 'text-slate-900'}`}>{bill.amount.toLocaleString()} в‚Ѕ</span>
                         <button onClick={() => deleteBill(bill.id)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-300 hover:text-rose-500 transition-colors">
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -915,7 +915,7 @@ const BudgetTab = () => {
                 )) : (
                   <div className="flex flex-col items-center justify-center h-40 text-slate-300 border-2 border-dashed border-slate-100 rounded-[32px]">
                     <Landmark className="w-10 h-10 mb-2 opacity-50" />
-                    <p className="text-sm font-medium">Нет платежей</p>
+                    <p className="text-sm font-medium">РќРµС‚ РїР»Р°С‚РµР¶РµР№</p>
                   </div>
                 )}
               </div>
@@ -924,7 +924,7 @@ const BudgetTab = () => {
               <PressableScale onClick={() => setAddBillOpen(true)} className="w-full">
                 <div className="bg-violet-500 h-14 rounded-[28px] flex items-center justify-center shadow-xl shadow-violet-200">
                   <Plus className="w-6 h-6 text-white mr-2" />
-                  <span className="text-white font-bold text-lg">Добавить платёж</span>
+                  <span className="text-white font-bold text-lg">Р”РѕР±Р°РІРёС‚СЊ РїР»Р°С‚С‘Р¶</span>
                 </div>
               </PressableScale>
             </div>
@@ -937,19 +937,19 @@ const BudgetTab = () => {
         <div className="fixed inset-0 z-[110] flex items-end">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setAddBillOpen(false)} />
           <div className="bg-white w-full max-w-md mx-auto rounded-t-[40px] p-8 space-y-6 shadow-2xl relative animate-in slide-in-from-bottom duration-300">
-            <h2 className="text-2xl font-bold text-slate-900">Новый платёж</h2>
+            <h2 className="text-2xl font-bold text-slate-900">РќРѕРІС‹Р№ РїР»Р°С‚С‘Р¶</h2>
             <div className="space-y-5">
               <div className="space-y-2">
-                <label className={THEME.text.label}>Название</label>
+                <label className={THEME.text.label}>РќР°Р·РІР°РЅРёРµ</label>
                 <input
                   value={newBill.title}
                   onChange={e => setNewBill({ ...newBill, title: e.target.value })}
-                  placeholder="Напр: Аренда"
+                  placeholder="РќР°РїСЂ: РђСЂРµРЅРґР°"
                   className="w-full bg-slate-50 border-none rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
                 />
               </div>
               <div className="space-y-2">
-                <label className={THEME.text.label}>Сумма</label>
+                <label className={THEME.text.label}>РЎСѓРјРјР°</label>
                 <input
                   type="number"
                   value={newBill.amount}
@@ -959,7 +959,7 @@ const BudgetTab = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className={THEME.text.label}>День оплаты (1-31)</label>
+                <label className={THEME.text.label}>Р”РµРЅСЊ РѕРїР»Р°С‚С‹ (1-31)</label>
                 <input
                   type="number"
                   min="1"
@@ -973,7 +973,7 @@ const BudgetTab = () => {
             </div>
             <PressableScale onClick={handleAddBill} className="w-full pt-2">
               <div className="bg-violet-500 h-14 rounded-[28px] flex items-center justify-center shadow-xl shadow-violet-200">
-                <span className="text-white font-bold text-lg">Добавить</span>
+                <span className="text-white font-bold text-lg">Р”РѕР±Р°РІРёС‚СЊ</span>
               </div>
             </PressableScale>
           </div>
@@ -986,8 +986,8 @@ const BudgetTab = () => {
 // --- Notes Tab ---
 const NotesTab = () => {
   const [notes, setNotes] = useLocalStorage<Note[]>('lifehub_notes', [
-    { id: '1', title: 'Идеи для проекта', content: 'Разработать мобильное приложение для трекинга привычек', color: 'bg-amber-100', createdAt: Date.now() },
-    { id: '2', title: 'Список покупок', content: 'Молоко, хлеб, яйца, сыр', color: 'bg-emerald-100', createdAt: Date.now() - 86400000 },
+    { id: '1', title: 'РРґРµРё РґР»СЏ РїСЂРѕРµРєС‚Р°', content: 'Р Р°Р·СЂР°Р±РѕС‚Р°С‚СЊ РјРѕР±РёР»СЊРЅРѕРµ РїСЂРёР»РѕР¶РµРЅРёРµ РґР»СЏ С‚СЂРµРєРёРЅРіР° РїСЂРёРІС‹С‡РµРє', color: 'bg-amber-100', createdAt: Date.now() },
+    { id: '2', title: 'РЎРїРёСЃРѕРє РїРѕРєСѓРїРѕРє', content: 'РњРѕР»РѕРєРѕ, С…Р»РµР±, СЏР№С†Р°, СЃС‹СЂ', color: 'bg-emerald-100', createdAt: Date.now() - 86400000 },
   ]);
   const [isAddOpen, setAddOpen] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
@@ -1033,8 +1033,8 @@ const NotesTab = () => {
     <div className="space-y-6 animate-in fade-in duration-500">
       <header className="pt-4 flex justify-between items-center">
         <div>
-          <p className={THEME.text.label}>Заметки</p>
-          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight mt-1">Мои записи</h1>
+          <p className={THEME.text.label}>Р—Р°РјРµС‚РєРё</p>
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight mt-1">РњРѕРё Р·Р°РїРёСЃРё</h1>
         </div>
         <PressableScale onClick={openAdd} className="bg-amber-500 p-3 rounded-2xl shadow-lg shadow-amber-200 text-white">
           <Plus className="w-6 h-6" />
@@ -1056,8 +1056,8 @@ const NotesTab = () => {
       {notes.length === 0 && (
         <div className="flex flex-col items-center justify-center h-60 text-slate-300">
           <StickyNote className="w-16 h-16 mb-4 opacity-50" />
-          <p className="font-medium">Нет заметок</p>
-          <p className="text-sm">Создайте первую!</p>
+          <p className="font-medium">РќРµС‚ Р·Р°РјРµС‚РѕРє</p>
+          <p className="text-sm">РЎРѕР·РґР°Р№С‚Рµ РїРµСЂРІСѓСЋ!</p>
         </div>
       )}
 
@@ -1066,7 +1066,7 @@ const NotesTab = () => {
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setAddOpen(false)} />
           <div className="bg-white w-full max-w-md mx-auto rounded-t-[40px] p-8 space-y-6 shadow-2xl relative animate-in slide-in-from-bottom duration-300">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-slate-900">{editingNote ? 'Редактирование' : 'Новая заметка'}</h2>
+              <h2 className="text-2xl font-bold text-slate-900">{editingNote ? 'Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ' : 'РќРѕРІР°СЏ Р·Р°РјРµС‚РєР°'}</h2>
               {editingNote && (
                 <button onClick={handleDelete} className="bg-rose-50 p-3 rounded-full text-rose-500 hover:bg-rose-100">
                   <Trash2 className="w-5 h-5" />
@@ -1076,26 +1076,26 @@ const NotesTab = () => {
 
             <div className="space-y-5">
               <div className="space-y-2">
-                <label className={THEME.text.label}>Заголовок</label>
+                <label className={THEME.text.label}>Р—Р°РіРѕР»РѕРІРѕРє</label>
                 <input
                   value={noteForm.title}
                   onChange={e => setNoteForm({ ...noteForm, title: e.target.value })}
-                  placeholder="Название заметки"
+                  placeholder="РќР°Р·РІР°РЅРёРµ Р·Р°РјРµС‚РєРё"
                   className="w-full bg-slate-50 border-none rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
                 />
               </div>
               <div className="space-y-2">
-                <label className={THEME.text.label}>Содержание</label>
+                <label className={THEME.text.label}>РЎРѕРґРµСЂР¶Р°РЅРёРµ</label>
                 <textarea
                   value={noteForm.content}
                   onChange={e => setNoteForm({ ...noteForm, content: e.target.value })}
-                  placeholder="Текст заметки..."
+                  placeholder="РўРµРєСЃС‚ Р·Р°РјРµС‚РєРё..."
                   rows={4}
                   className="w-full bg-slate-50 border-none rounded-2xl py-4 px-5 font-medium text-slate-800 outline-none resize-none"
                 />
               </div>
               <div className="space-y-2">
-                <label className={THEME.text.label}>Цвет</label>
+                <label className={THEME.text.label}>Р¦РІРµС‚</label>
                 <div className="flex gap-2">
                   {colors.map(color => (
                     <button
@@ -1110,7 +1110,7 @@ const NotesTab = () => {
 
             <PressableScale onClick={handleSave} className="w-full pt-2">
               <div className="bg-amber-500 h-14 rounded-[28px] flex items-center justify-center shadow-xl shadow-amber-200">
-                <span className="text-white font-bold text-lg">{editingNote ? 'Сохранить' : 'Создать'}</span>
+                <span className="text-white font-bold text-lg">{editingNote ? 'РЎРѕС…СЂР°РЅРёС‚СЊ' : 'РЎРѕР·РґР°С‚СЊ'}</span>
               </div>
             </PressableScale>
           </div>
@@ -1123,8 +1123,8 @@ const NotesTab = () => {
 // --- Events Tab ---
 const EventsTab = () => {
   const [events, setEvents] = useLocalStorage<Event[]>('lifehub_events', [
-    { id: '1', title: 'Встреча с командой', date: '2024-12-20', time: '14:00', description: 'Обсуждение нового проекта', color: 'bg-violet-500', createdAt: Date.now() },
-    { id: '2', title: 'Звонок с клиентом', date: '2024-12-22', time: '10:30', description: 'Презентация результатов', color: 'bg-emerald-500', createdAt: Date.now() },
+    { id: '1', title: 'Р’СЃС‚СЂРµС‡Р° СЃ РєРѕРјР°РЅРґРѕР№', date: '2024-12-20', time: '14:00', description: 'РћР±СЃСѓР¶РґРµРЅРёРµ РЅРѕРІРѕРіРѕ РїСЂРѕРµРєС‚Р°', color: 'bg-violet-500', createdAt: Date.now() },
+    { id: '2', title: 'Р—РІРѕРЅРѕРє СЃ РєР»РёРµРЅС‚РѕРј', date: '2024-12-22', time: '10:30', description: 'РџСЂРµР·РµРЅС‚Р°С†РёСЏ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ', color: 'bg-emerald-500', createdAt: Date.now() },
   ]);
   const [isAddOpen, setAddOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
@@ -1172,8 +1172,8 @@ const EventsTab = () => {
     <div className="space-y-6 animate-in fade-in duration-500">
       <header className="pt-4 flex justify-between items-center">
         <div>
-          <p className={THEME.text.label}>Календарь</p>
-          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight mt-1">События</h1>
+          <p className={THEME.text.label}>РљР°Р»РµРЅРґР°СЂСЊ</p>
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight mt-1">РЎРѕР±С‹С‚РёСЏ</h1>
         </div>
         <PressableScale onClick={openAdd} className="bg-violet-500 p-3 rounded-2xl shadow-lg shadow-violet-200 text-white">
           <Plus className="w-6 h-6" />
@@ -1210,8 +1210,8 @@ const EventsTab = () => {
       {events.length === 0 && (
         <div className="flex flex-col items-center justify-center h-60 text-slate-300">
           <CalendarIcon className="w-16 h-16 mb-4 opacity-50" />
-          <p className="font-medium">Нет событий</p>
-          <p className="text-sm">Добавьте первое!</p>
+          <p className="font-medium">РќРµС‚ СЃРѕР±С‹С‚РёР№</p>
+          <p className="text-sm">Р”РѕР±Р°РІСЊС‚Рµ РїРµСЂРІРѕРµ!</p>
         </div>
       )}
 
@@ -1220,7 +1220,7 @@ const EventsTab = () => {
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setAddOpen(false)} />
           <div className="bg-white w-full max-w-md mx-auto rounded-t-[40px] p-8 space-y-6 shadow-2xl relative animate-in slide-in-from-bottom duration-300 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-slate-900">{editingEvent ? 'Редактирование' : 'Новое событие'}</h2>
+              <h2 className="text-2xl font-bold text-slate-900">{editingEvent ? 'Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ' : 'РќРѕРІРѕРµ СЃРѕР±С‹С‚РёРµ'}</h2>
               {editingEvent && (
                 <button onClick={handleDelete} className="bg-rose-50 p-3 rounded-full text-rose-500 hover:bg-rose-100">
                   <Trash2 className="w-5 h-5" />
@@ -1230,17 +1230,17 @@ const EventsTab = () => {
 
             <div className="space-y-5">
               <div className="space-y-2">
-                <label className={THEME.text.label}>Название</label>
+                <label className={THEME.text.label}>РќР°Р·РІР°РЅРёРµ</label>
                 <input
                   value={eventForm.title}
                   onChange={e => setEventForm({ ...eventForm, title: e.target.value })}
-                  placeholder="Название события"
+                  placeholder="РќР°Р·РІР°РЅРёРµ СЃРѕР±С‹С‚РёСЏ"
                   className="w-full bg-slate-50 border-none rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className={THEME.text.label}>Дата</label>
+                  <label className={THEME.text.label}>Р”Р°С‚Р°</label>
                   <input
                     type="date"
                     value={eventForm.date}
@@ -1249,7 +1249,7 @@ const EventsTab = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className={THEME.text.label}>Время</label>
+                  <label className={THEME.text.label}>Р’СЂРµРјСЏ</label>
                   <input
                     type="time"
                     value={eventForm.time}
@@ -1259,17 +1259,17 @@ const EventsTab = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className={THEME.text.label}>Описание</label>
+                <label className={THEME.text.label}>РћРїРёСЃР°РЅРёРµ</label>
                 <textarea
                   value={eventForm.description}
                   onChange={e => setEventForm({ ...eventForm, description: e.target.value })}
-                  placeholder="Подробности..."
+                  placeholder="РџРѕРґСЂРѕР±РЅРѕСЃС‚Рё..."
                   rows={3}
                   className="w-full bg-slate-50 border-none rounded-2xl py-4 px-5 font-medium text-slate-800 outline-none resize-none"
                 />
               </div>
               <div className="space-y-2">
-                <label className={THEME.text.label}>Цвет</label>
+                <label className={THEME.text.label}>Р¦РІРµС‚</label>
                 <div className="flex gap-2">
                   {colors.map(color => (
                     <button
@@ -1284,7 +1284,7 @@ const EventsTab = () => {
 
             <PressableScale onClick={handleSave} className="w-full pt-2">
               <div className="bg-violet-500 h-14 rounded-[28px] flex items-center justify-center shadow-xl shadow-violet-200">
-                <span className="text-white font-bold text-lg">{editingEvent ? 'Сохранить' : 'Создать'}</span>
+                <span className="text-white font-bold text-lg">{editingEvent ? 'РЎРѕС…СЂР°РЅРёС‚СЊ' : 'РЎРѕР·РґР°С‚СЊ'}</span>
               </div>
             </PressableScale>
           </div>
@@ -1302,7 +1302,7 @@ const HomeTab = () => {
   const [goals] = useLocalStorage<Goal[]>('lifehub_goals', []);
 
   const today = new Date();
-  const greeting = today.getHours() < 12 ? 'Доброе утро' : today.getHours() < 18 ? 'Добрый день' : 'Добрый вечер';
+  const greeting = today.getHours() < 12 ? 'Р”РѕР±СЂРѕРµ СѓС‚СЂРѕ' : today.getHours() < 18 ? 'Р”РѕР±СЂС‹Р№ РґРµРЅСЊ' : 'Р”РѕР±СЂС‹Р№ РІРµС‡РµСЂ';
 
   const upcomingEvents = events
     .filter(e => new Date(e.date) >= today)
@@ -1321,7 +1321,7 @@ const HomeTab = () => {
     <div className="space-y-6 animate-in fade-in duration-500">
       <header className="pt-4">
         <p className={THEME.text.label}>{today.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-        <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight mt-1">{greeting}! 👋</h1>
+        <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight mt-1">{greeting}! рџ‘‹</h1>
       </header>
 
       {/* Quick Stats */}
@@ -1331,9 +1331,9 @@ const HomeTab = () => {
             <div className="bg-emerald-100 p-2.5 rounded-xl">
               <Wallet className="w-5 h-5 text-emerald-600" />
             </div>
-            <span className={THEME.text.label}>Баланс</span>
+            <span className={THEME.text.label}>Р‘Р°Р»Р°РЅСЃ</span>
           </div>
-          <p className="text-2xl font-extrabold text-emerald-700">{totalBalance.toLocaleString()} ₽</p>
+          <p className="text-2xl font-extrabold text-emerald-700">{totalBalance.toLocaleString()} в‚Ѕ</p>
         </BentoCard>
 
         <BentoCard className="bg-gradient-to-br from-rose-50 to-rose-100/50">
@@ -1341,19 +1341,19 @@ const HomeTab = () => {
             <div className="bg-rose-100 p-2.5 rounded-xl">
               <TrendingDown className="w-5 h-5 text-rose-600" />
             </div>
-            <span className={THEME.text.label}>Расходы</span>
+            <span className={THEME.text.label}>Р Р°СЃС…РѕРґС‹</span>
           </div>
-          <p className="text-2xl font-extrabold text-rose-700">{monthlySpent.toLocaleString()} ₽</p>
+          <p className="text-2xl font-extrabold text-rose-700">{monthlySpent.toLocaleString()} в‚Ѕ</p>
         </BentoCard>
       </div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-4 gap-3">
         {[
-          { icon: Receipt, label: 'Расход', color: 'bg-rose-50 text-rose-500' },
-          { icon: TrendingUp, label: 'Доход', color: 'bg-emerald-50 text-emerald-500' },
-          { icon: StickyNote, label: 'Заметка', color: 'bg-amber-50 text-amber-500' },
-          { icon: CalendarIcon, label: 'Событие', color: 'bg-violet-50 text-violet-500' },
+          { icon: Receipt, label: 'Р Р°СЃС…РѕРґ', color: 'bg-rose-50 text-rose-500' },
+          { icon: TrendingUp, label: 'Р”РѕС…РѕРґ', color: 'bg-emerald-50 text-emerald-500' },
+          { icon: StickyNote, label: 'Р—Р°РјРµС‚РєР°', color: 'bg-amber-50 text-amber-500' },
+          { icon: CalendarIcon, label: 'РЎРѕР±С‹С‚РёРµ', color: 'bg-violet-50 text-violet-500' },
         ].map((action, i) => (
           <PressableScale key={i} className={`${action.color} p-4 rounded-2xl flex flex-col items-center gap-2`}>
             <action.icon className="w-6 h-6" />
@@ -1365,7 +1365,7 @@ const HomeTab = () => {
       {/* Goals Progress */}
       {goals.length > 0 && (
         <section>
-          <SectionHeader title="Цели" />
+          <SectionHeader title="Р¦РµР»Рё" />
           <div className="space-y-3">
             {goals.slice(0, 2).map(goal => {
               const percent = goal.targetAmount > 0 ? Math.round((goal.currentAmount / goal.targetAmount) * 100) : 0;
@@ -1388,7 +1388,7 @@ const HomeTab = () => {
       {/* Upcoming Events */}
       {upcomingEvents.length > 0 && (
         <section>
-          <SectionHeader title="Ближайшие события" />
+          <SectionHeader title="Р‘Р»РёР¶Р°Р№С€РёРµ СЃРѕР±С‹С‚РёСЏ" />
           <div className="space-y-3">
             {upcomingEvents.map(event => (
               <BentoCard key={event.id} className="!p-4 flex gap-4 items-center">
@@ -1397,7 +1397,7 @@ const HomeTab = () => {
                   <h3 className="font-bold text-slate-800">{event.title}</h3>
                   <p className="text-sm text-slate-400">
                     {new Date(event.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
-                    {event.time && ` в ${event.time}`}
+                    {event.time && ` РІ ${event.time}`}
                   </p>
                 </div>
               </BentoCard>
@@ -1409,7 +1409,7 @@ const HomeTab = () => {
       {/* Recent Transactions */}
       {recentTransactions.length > 0 && (
         <section>
-          <SectionHeader title="Последние операции" />
+          <SectionHeader title="РџРѕСЃР»РµРґРЅРёРµ РѕРїРµСЂР°С†РёРё" />
           <BentoCard className="!p-4 space-y-3">
             {recentTransactions.map(t => (
               <div key={t.id} className="flex justify-between items-center">
@@ -1423,7 +1423,7 @@ const HomeTab = () => {
                   </div>
                 </div>
                 <span className={`font-mono font-bold text-sm ${t.type === 'income' ? 'text-emerald-500' : 'text-slate-700'}`}>
-                  {t.type === 'income' ? '+' : '-'}{t.amount} ₽
+                  {t.type === 'income' ? '+' : '-'}{t.amount} в‚Ѕ
                 </span>
               </div>
             ))}
@@ -1439,10 +1439,10 @@ export function App() {
   const [activeTab, setActiveTab] = useState('home');
 
   const tabs = [
-    { id: 'home', icon: Home, label: 'Главная' },
-    { id: 'budget', icon: Wallet, label: 'Бюджет' },
-    { id: 'events', icon: CalendarIcon, label: 'События' },
-    { id: 'notes', icon: StickyNote, label: 'Заметки' },
+    { id: 'home', icon: Home, label: 'Р“Р»Р°РІРЅР°СЏ' },
+    { id: 'budget', icon: Wallet, label: 'Р‘СЋРґР¶РµС‚' },
+    { id: 'events', icon: CalendarIcon, label: 'РЎРѕР±С‹С‚РёСЏ' },
+    { id: 'notes', icon: StickyNote, label: 'Р—Р°РјРµС‚РєРё' },
   ];
 
   const renderTab = () => {
