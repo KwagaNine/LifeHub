@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>LifeHub — Финансы, Дни рождения, Заметки, Запасы</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <title>LifeHub вЂ” Р¤РёРЅР°РЅСЃС‹, Р”РЅРё СЂРѕР¶РґРµРЅРёСЏ, Р—Р°РјРµС‚РєРё, Р—Р°РїР°СЃС‹</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2314b8a6'/%3E%3Cstop offset='1' stop-color='%238b5cf6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='4' y='4' width='56' height='56' rx='16' fill='url(%23g)'/%3E%3Cpath d='M20 20v24h6v-9h8v9h6V20h-6v9h-8v-9z' fill='white' opacity='.95'/%3E%3C/svg%3E" />
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -45,8 +48,32 @@
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Р¤РёРєСЃР°С†РёСЏ СЂР°Р·РјРµСЂР° РѕРєРЅР° Рё РїСЂРµРґРѕС‚РІСЂР°С‰РµРЅРёРµ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕРіРѕ СЃРєСЂРѕР»Р»Р° */
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+        html {
+            height: 100%;
+            height: -webkit-fill-available;
+        }
+        body {
+            min-height: 100%;
+            min-height: -webkit-fill-available;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            position: relative;
+        }
+        #root {
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
         * { -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -57,8 +84,19 @@
         .animate-zoomIn { animation: zoomIn 0.3s ease-out; }
         .line-clamp-4 { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 
+        /* Prevent text selection for app-like feel */
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
         /* Safe-area helpers (Telegram/iOS) */
         .safe-bottom { padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); }
+        .safe-top { padding-top: env(safe-area-inset-top); }
+        .safe-left { padding-left: env(safe-area-inset-left); }
+        .safe-right { padding-right: env(safe-area-inset-right); }
 
         /* --- Dark theme overrides (minimal but usable) --- */
         .dark body { background-color: rgb(2 6 23); color: rgb(226 232 240); }
@@ -91,20 +129,48 @@
         const SUPABASE_URL = 'https://xhywokafvifzyoxuklqi.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoeXdva2FmdmlmenlveHVrbHFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNDU2NTcsImV4cCI6MjA4NTcyMTY1N30.P74yViXWfSEA-WzC5o06ZDz-qVYU7PgAGUFpKnouw18';
         
-        // Инициализация Supabase клиента
+        // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Supabase РєР»РёРµРЅС‚Р°
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Получение ID пользователя из Telegram или тестовый ID
+        // РџРѕР»СѓС‡РµРЅРёРµ ID РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РёР· Telegram РёР»Рё С‚РµСЃС‚РѕРІС‹Р№ ID
         const getUserId = () => {
-            if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
-                return String(window.Telegram.WebApp.initDataUnsafe.user.id);
+            // РџРѕРїСЂРѕР±СѓРµРј СЂР°Р·РЅС‹Рµ СЃРїРѕСЃРѕР±С‹ РїРѕР»СѓС‡РµРЅРёСЏ ID РёР· Telegram
+            try {
+                // РЎРїРѕСЃРѕР± 1: initDataUnsafe.user.id
+                if (window.Telegram?.WebApp?.initDataUnsafe?.user?.id) {
+                    return String(window.Telegram.WebApp.initDataUnsafe.user.id);
+                }
+                
+                // РЎРїРѕСЃРѕР± 2: С‡РµСЂРµР· initData (РїР°СЂСЃРёРЅРі query string)
+                if (window.Telegram?.WebApp?.initData) {
+                    const params = new URLSearchParams(window.Telegram.WebApp.initData);
+                    const userJson = params.get('user');
+                    if (userJson) {
+                        try {
+                            const user = JSON.parse(userJson);
+                            if (user.id) return String(user.id);
+                        } catch (e) {
+                            console.warn('Failed to parse user from initData:', e);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Error getting Telegram user ID:', e);
             }
-            // Тестовый ID для разработки в браузере
+            
+            // РўРµСЃС‚РѕРІС‹Р№ ID РґР»СЏ СЂР°Р·СЂР°Р±РѕС‚РєРё РІ Р±СЂР°СѓР·РµСЂРµ
             return '111111';
         };
 
         const USER_ID = getUserId();
-        console.log('LifeHub User ID:', USER_ID);
+        
+        // Р”РµС‚Р°Р»СЊРЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ РґР»СЏ РѕС‚Р»Р°РґРєРё
+        console.log('=== LifeHub Debug Info ===');
+        console.log('User ID:', USER_ID);
+        console.log('Telegram WebApp available:', !!window.Telegram?.WebApp);
+        console.log('initDataUnsafe:', window.Telegram?.WebApp?.initDataUnsafe);
+        console.log('initData:', window.Telegram?.WebApp?.initData);
+        console.log('========================');
 
         // --- Supabase Data Context ---
         const DataContext = createContext(null);
@@ -113,38 +179,60 @@
             const [data, setData] = useState(null);
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
+            const [syncStatus, setSyncStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
+            const [lastSyncTime, setLastSyncTime] = useState(null);
             const saveTimeoutRef = useRef(null);
+            const syncIndicatorTimeoutRef = useRef(null);
 
-            // Загрузка данных из Supabase
+            // Р—Р°РіСЂСѓР·РєР° РґР°РЅРЅС‹С… РёР· Supabase
             const loadData = useCallback(async () => {
                 try {
                     setLoading(true);
-                    const { data: row, error } = await supabase
+                    setError(null);
+                    setSyncStatus('idle');
+                    
+                    console.log('[Supabase] Loading data for user:', USER_ID);
+                    
+                    const { data: row, error: fetchError } = await supabase
                         .from('user_data')
                         .select('data')
                         .eq('user_id', USER_ID)
                         .single();
 
-                    if (error && error.code !== 'PGRST116') {
+                    console.log('[Supabase] Fetch result:', { row, error: fetchError });
+
+                    if (fetchError && fetchError.code !== 'PGRST116') {
                         // PGRST116 = no rows found (new user)
-                        throw error;
+                        throw fetchError;
                     }
 
                     if (row?.data) {
+                        console.log('[Supabase] Loaded existing data');
                         setData(row.data);
+                        setLastSyncTime(new Date());
                     } else {
-                        // Новый пользователь — устанавливаем дефолтные данные
+                        // РќРѕРІС‹Р№ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ вЂ” СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РґРµС„РѕР»С‚РЅС‹Рµ РґР°РЅРЅС‹Рµ
+                        console.log('[Supabase] New user, creating default data');
                         const defaultData = getDefaultData();
                         setData(defaultData);
-                        // Сохраняем в базу
-                        await supabase.from('user_data').upsert({
+                        
+                        // РЎРѕС…СЂР°РЅСЏРµРј РІ Р±Р°Р·Сѓ
+                        const { error: insertError } = await supabase.from('user_data').upsert({
                             user_id: USER_ID,
                             data: defaultData
                         });
+                        
+                        if (insertError) {
+                            console.error('[Supabase] Error creating new user:', insertError);
+                            throw insertError;
+                        }
+                        
+                        console.log('[Supabase] Created new user data successfully');
+                        setLastSyncTime(new Date());
                     }
                 } catch (err) {
-                    console.error('Error loading data:', err);
-                    setError(err.message);
+                    console.error('[Supabase] Error loading data:', err);
+                    setError(err.message || 'РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РґР°РЅРЅС‹С…');
                     // Fallback to default data
                     setData(getDefaultData());
                 } finally {
@@ -152,30 +240,47 @@
                 }
             }, []);
 
-            // Сохранение данных в Supabase (с дебаунсом)
+            // РЎРѕС…СЂР°РЅРµРЅРёРµ РґР°РЅРЅС‹С… РІ Supabase (СЃ РґРµР±Р°СѓРЅСЃРѕРј)
             const saveData = useCallback(async (newData) => {
                 setData(newData);
+                setSyncStatus('saving');
                 
-                // Дебаунс — сохраняем через 500мс после последнего изменения
+                // Р”РµР±Р°СѓРЅСЃ вЂ” СЃРѕС…СЂР°РЅСЏРµРј С‡РµСЂРµР· 500РјСЃ РїРѕСЃР»Рµ РїРѕСЃР»РµРґРЅРµРіРѕ РёР·РјРµРЅРµРЅРёСЏ
                 if (saveTimeoutRef.current) {
                     clearTimeout(saveTimeoutRef.current);
                 }
                 
                 saveTimeoutRef.current = setTimeout(async () => {
                     try {
-                        const { error } = await supabase.from('user_data').upsert({
+                        console.log('[Supabase] Saving data for user:', USER_ID);
+                        
+                        const { error: saveError } = await supabase.from('user_data').upsert({
                             user_id: USER_ID,
                             data: newData
                         });
-                        if (error) throw error;
-                        console.log('Data saved to Supabase');
+                        
+                        if (saveError) throw saveError;
+                        
+                        console.log('[Supabase] Data saved successfully');
+                        setSyncStatus('saved');
+                        setLastSyncTime(new Date());
+                        
+                        // РЎР±СЂР°СЃС‹РІР°РµРј СЃС‚Р°С‚СѓСЃ С‡РµСЂРµР· 2 СЃРµРєСѓРЅРґС‹
+                        if (syncIndicatorTimeoutRef.current) {
+                            clearTimeout(syncIndicatorTimeoutRef.current);
+                        }
+                        syncIndicatorTimeoutRef.current = setTimeout(() => {
+                            setSyncStatus('idle');
+                        }, 2000);
+                        
                     } catch (err) {
-                        console.error('Error saving data:', err);
+                        console.error('[Supabase] Error saving data:', err);
+                        setSyncStatus('error');
                     }
                 }, 500);
             }, []);
 
-            // Обновление конкретного ключа в данных
+            // РћР±РЅРѕРІР»РµРЅРёРµ РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ РєР»СЋС‡Р° РІ РґР°РЅРЅС‹С…
             const updateKey = useCallback((key, value) => {
                 setData(prev => {
                     const newData = { ...prev, [key]: value };
@@ -189,7 +294,7 @@
             }, [loadData]);
 
             return (
-                <DataContext.Provider value={{ data, loading, error, updateKey, saveData, reload: loadData }}>
+                <DataContext.Provider value={{ data, loading, error, syncStatus, lastSyncTime, updateKey, saveData, reload: loadData }}>
                     {children}
                 </DataContext.Provider>
             );
@@ -197,7 +302,7 @@
 
         const useData = () => useContext(DataContext);
 
-        // Дефолтные данные для нового пользователя
+        // Р”РµС„РѕР»С‚РЅС‹Рµ РґР°РЅРЅС‹Рµ РґР»СЏ РЅРѕРІРѕРіРѕ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
         const getDefaultData = () => ({
             balance: 0,
             limit: 60000,
@@ -210,14 +315,14 @@
             life_goals: [],
             reminders: [],
             ideas: [],
-            categories: ['Еда', 'Транспорт', 'Дом', 'Развлечения', 'Здоровье', 'Шоппинг', 'Фриланс', 'Разное'],
+            categories: ['Р•РґР°', 'РўСЂР°РЅСЃРїРѕСЂС‚', 'Р”РѕРј', 'Р Р°Р·РІР»РµС‡РµРЅРёСЏ', 'Р—РґРѕСЂРѕРІСЊРµ', 'РЁРѕРїРїРёРЅРі', 'Р¤СЂРёР»Р°РЅСЃ', 'Р Р°Р·РЅРѕРµ'],
             category_limits: {},
             theme: 'light',
-            home_greeting: 'Добрый день! 👋',
-            ideas_title: 'Идеи'
+            home_greeting: 'Р”РѕР±СЂС‹Р№ РґРµРЅСЊ! рџ‘‹',
+            ideas_title: 'РРґРµРё'
         });
 
-        // --- Хук для работы с данными (замена useLocalStorage) ---
+        // --- РҐСѓРє РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РґР°РЅРЅС‹РјРё (Р·Р°РјРµРЅР° useLocalStorage) ---
         const useCloudStorage = (key, initialValue) => {
             const { data, updateKey } = useData();
             
@@ -231,7 +336,7 @@
             return [value, setValue];
         };
 
-        // Алиас для совместимости (все компоненты будут использовать useCloudStorage)
+        // РђР»РёР°СЃ РґР»СЏ СЃРѕРІРјРµСЃС‚РёРјРѕСЃС‚Рё (РІСЃРµ РєРѕРјРїРѕРЅРµРЅС‚С‹ Р±СѓРґСѓС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ useCloudStorage)
         const useLocalStorage = useCloudStorage;
 
         // --- Icons (SVG components) ---
@@ -293,10 +398,10 @@
                     return (
                         <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-50">
                             <Icons.AlertTriangle className="w-16 h-16 text-rose-500 mb-4" />
-                            <h1 className="text-2xl font-bold mb-2 text-slate-800">Что-то пошло не так</h1>
-                            <p className="text-slate-500 text-center mb-6">Приложение столкнулось с ошибкой.</p>
+                            <h1 className="text-2xl font-bold mb-2 text-slate-800">Р§С‚Рѕ-С‚Рѕ РїРѕС€Р»Рѕ РЅРµ С‚Р°Рє</h1>
+                            <p className="text-slate-500 text-center mb-6">РџСЂРёР»РѕР¶РµРЅРёРµ СЃС‚РѕР»РєРЅСѓР»РѕСЃСЊ СЃ РѕС€РёР±РєРѕР№.</p>
                             <button onClick={() => window.location.reload()} className="bg-slate-900 text-white px-6 py-3 rounded-full font-bold">
-                                Перезагрузить
+                                РџРµСЂРµР·Р°РіСЂСѓР·РёС‚СЊ
                             </button>
                         </div>
                     );
@@ -345,7 +450,7 @@
         const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
         const isSameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 
-        // --- Month Calendar (полноценный) ---
+        // --- Month Calendar (РїРѕР»РЅРѕС†РµРЅРЅС‹Р№) ---
         const MonthCalendar = ({
             viewMonth,
             selectedDate,
@@ -369,7 +474,7 @@
                         </PressableScale>
                         <div className="text-center">
                             <div className="text-sm font-extrabold text-slate-900 capitalize">{monthTitle}</div>
-                            <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">выберите дату</div>
+                            <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">РІС‹Р±РµСЂРёС‚Рµ РґР°С‚Сѓ</div>
                         </div>
                         <PressableScale onClick={onNextMonth} className="p-2 rounded-xl bg-white text-slate-500 border border-slate-100 shadow-sm hover:bg-slate-50">
                             <Icons.ChevronRight className="w-5 h-5" />
@@ -377,7 +482,7 @@
                     </div>
 
                     <div className="grid grid-cols-7 gap-1">
-                        {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(d => (
+                        {['РџРЅ', 'Р’С‚', 'РЎСЂ', 'Р§С‚', 'РџС‚', 'РЎР±', 'Р’СЃ'].map(d => (
                             <div key={d} className="h-8 flex items-center justify-center text-[10px] font-black text-slate-300 uppercase">{d}</div>
                         ))}
 
@@ -425,28 +530,28 @@
             const [totalBalance, setTotalBalance] = useCloudStorage('balance', 0);
             const [monthLimit, setMonthLimit] = useCloudStorage('limit', 60000);
 
-            // --- Категории и лимиты ---
+            // --- РљР°С‚РµРіРѕСЂРёРё Рё Р»РёРјРёС‚С‹ ---
             const [categoryLimits, setCategoryLimits] = useCloudStorage('category_limits', {});
-            const [categoriesList, setCategoriesList] = useCloudStorage('categories', ['Еда', 'Транспорт', 'Дом', 'Развлечения', 'Здоровье', 'Шоппинг', 'Фриланс', 'Разное']);
+            const [categoriesList, setCategoriesList] = useCloudStorage('categories', ['Р•РґР°', 'РўСЂР°РЅСЃРїРѕСЂС‚', 'Р”РѕРј', 'Р Р°Р·РІР»РµС‡РµРЅРёСЏ', 'Р—РґРѕСЂРѕРІСЊРµ', 'РЁРѕРїРїРёРЅРі', 'Р¤СЂРёР»Р°РЅСЃ', 'Р Р°Р·РЅРѕРµ']);
             const categories = categoriesList || [];
 
-            // Модалка управления категорией (добавить/редактировать/удалить)
+            // РњРѕРґР°Р»РєР° СѓРїСЂР°РІР»РµРЅРёСЏ РєР°С‚РµРіРѕСЂРёРµР№ (РґРѕР±Р°РІРёС‚СЊ/СЂРµРґР°РєС‚РёСЂРѕРІР°С‚СЊ/СѓРґР°Р»РёС‚СЊ)
             const [isCategoryLimitOpen, setCategoryLimitOpen] = useState(false);
             const [categoryModalMode, setCategoryModalMode] = useState('edit'); // 'add' | 'edit'
-            const [editingLimitCategory, setEditingLimitCategory] = useState(null); // исходное имя (для редактирования)
+            const [editingLimitCategory, setEditingLimitCategory] = useState(null); // РёСЃС…РѕРґРЅРѕРµ РёРјСЏ (РґР»СЏ СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ)
             const [categoryNameDraft, setCategoryNameDraft] = useState('');
             const [categoryLimitDraft, setCategoryLimitDraft] = useState('');
             const [categoryModalError, setCategoryModalError] = useState('');
 
-            // Быстрое добавление категории из модалки операции
+            // Р‘С‹СЃС‚СЂРѕРµ РґРѕР±Р°РІР»РµРЅРёРµ РєР°С‚РµРіРѕСЂРёРё РёР· РјРѕРґР°Р»РєРё РѕРїРµСЂР°С†РёРё
             const [isAddingCategory, setIsAddingCategory] = useState(false);
             const [newCategoryName, setNewCategoryName] = useState('');
 
-            // Операции: полноценный календарь (месяц/год)
+            // РћРїРµСЂР°С†РёРё: РїРѕР»РЅРѕС†РµРЅРЅС‹Р№ РєР°Р»РµРЅРґР°СЂСЊ (РјРµСЃСЏС†/РіРѕРґ)
             const [selectedDateObj, setSelectedDateObj] = useState(() => startOfDay(new Date()));
             const [opsViewMonth, setOpsViewMonth] = useState(() => new Date(selectedDateObj.getFullYear(), selectedDateObj.getMonth(), 1));
 
-            // Платежи: календарь с навигацией по месяцам (для выбора дня)
+            // РџР»Р°С‚РµР¶Рё: РєР°Р»РµРЅРґР°СЂСЊ СЃ РЅР°РІРёРіР°С†РёРµР№ РїРѕ РјРµСЃСЏС†Р°Рј (РґР»СЏ РІС‹Р±РѕСЂР° РґРЅСЏ)
             const [selectedBillDateObj, setSelectedBillDateObj] = useState(() => startOfDay(new Date()));
             const [billsViewMonth, setBillsViewMonth] = useState(() => new Date(selectedBillDateObj.getFullYear(), selectedBillDateObj.getMonth(), 1));
 
@@ -454,7 +559,7 @@
             const [bills, setBills] = useCloudStorage('bills', []);
             const [goals, setGoals] = useCloudStorage('goals', []);
 
-            // Миграция старых транзакций (где была только "date" как число)
+            // РњРёРіСЂР°С†РёСЏ СЃС‚Р°СЂС‹С… С‚СЂР°РЅР·Р°РєС†РёР№ (РіРґРµ Р±С‹Р»Р° С‚РѕР»СЊРєРѕ "date" РєР°Рє С‡РёСЃР»Рѕ)
             useEffect(() => {
                 if (!transactions || transactions.length === 0) return;
                 const needs = transactions.some(t => !t.dateKey);
@@ -468,7 +573,7 @@
 
             const [newTrans, setNewTrans] = useState({ amount: '', title: '', type: 'expense', category: '' });
 
-            // Если категория в форме невалидна — подхватываем первую из списка
+            // Р•СЃР»Рё РєР°С‚РµРіРѕСЂРёСЏ РІ С„РѕСЂРјРµ РЅРµРІР°Р»РёРґРЅР° вЂ” РїРѕРґС…РІР°С‚С‹РІР°РµРј РїРµСЂРІСѓСЋ РёР· СЃРїРёСЃРєР°
             useEffect(() => {
                 if (!Array.isArray(categories) || categories.length === 0) return;
                 if (!newTrans.category || !categories.includes(newTrans.category)) {
@@ -480,7 +585,7 @@
             const [manualBalanceInput, setManualBalanceInput] = useState('');
             const [manualLimitInput, setManualLimitInput] = useState('');
 
-            // Текущий месяц для расчётов лимитов
+            // РўРµРєСѓС‰РёР№ РјРµСЃСЏС† РґР»СЏ СЂР°СЃС‡С‘С‚РѕРІ Р»РёРјРёС‚РѕРІ
             const today0 = startOfDay(new Date());
             const monthKey = (d) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
             const currentMonthKey = monthKey(today0);
@@ -506,7 +611,7 @@
                 (transactions || [])
                     .filter(t => t.type === 'expense' && txMonthKey(t) === currentMonthKey)
                     .forEach(t => {
-                        const c = t.category || 'Разное';
+                        const c = t.category || 'Р Р°Р·РЅРѕРµ';
                         stats[c] = (stats[c] || 0) + Number(t.amount || 0);
                     });
                 return Object.entries(stats)
@@ -524,10 +629,10 @@
                 setLoading(true);
                 await new Promise(resolve => setTimeout(resolve, 1500));
                 const advices = [
-                    `При текущих расходах ${spentThisMonth.toLocaleString()} ₽ вы используете ${Math.round(progress)}% лимита. Попробуйте сократить расходы на развлечения.`,
-                    `Ваш баланс ${totalBalance.toLocaleString()} ₽ позволяет откладывать по ${Math.round((totalBalance - spentThisMonth) / 30)} ₽ в день.`,
-                    `Совет: ведите учёт мелких расходов — они часто составляют до 30% бюджета!`,
-                    `Рекомендую создать "подушку безопасности" в размере 3-х месячных расходов.`
+                    `РџСЂРё С‚РµРєСѓС‰РёС… СЂР°СЃС…РѕРґР°С… ${spentThisMonth.toLocaleString()} в‚Ѕ РІС‹ РёСЃРїРѕР»СЊР·СѓРµС‚Рµ ${Math.round(progress)}% Р»РёРјРёС‚Р°. РџРѕРїСЂРѕР±СѓР№С‚Рµ СЃРѕРєСЂР°С‚РёС‚СЊ СЂР°СЃС…РѕРґС‹ РЅР° СЂР°Р·РІР»РµС‡РµРЅРёСЏ.`,
+                    `Р’Р°С€ Р±Р°Р»Р°РЅСЃ ${totalBalance.toLocaleString()} в‚Ѕ РїРѕР·РІРѕР»СЏРµС‚ РѕС‚РєР»Р°РґС‹РІР°С‚СЊ РїРѕ ${Math.round((totalBalance - spentThisMonth) / 30)} в‚Ѕ РІ РґРµРЅСЊ.`,
+                    `РЎРѕРІРµС‚: РІРµРґРёС‚Рµ СѓС‡С‘С‚ РјРµР»РєРёС… СЂР°СЃС…РѕРґРѕРІ вЂ” РѕРЅРё С‡Р°СЃС‚Рѕ СЃРѕСЃС‚Р°РІР»СЏСЋС‚ РґРѕ 30% Р±СЋРґР¶РµС‚Р°!`,
+                    `Р РµРєРѕРјРµРЅРґСѓСЋ СЃРѕР·РґР°С‚СЊ "РїРѕРґСѓС€РєСѓ Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё" РІ СЂР°Р·РјРµСЂРµ 3-С… РјРµСЃСЏС‡РЅС‹С… СЂР°СЃС…РѕРґРѕРІ.`
                 ];
                 setAdvice(advices[Math.floor(Math.random() * advices.length)]);
                 setLoading(false);
@@ -566,7 +671,7 @@
                 }
 
                 setAddTransOpen(false);
-                setNewTrans({ amount: '', title: '', type: 'expense', category: 'Еда' });
+                setNewTrans({ amount: '', title: '', type: 'expense', category: 'Р•РґР°' });
             };
 
             const handleAddBill = () => {
@@ -700,7 +805,7 @@
                 });
             };
 
-            // Legacy quick-add from "Новая операция" modal
+            // Legacy quick-add from "РќРѕРІР°СЏ РѕРїРµСЂР°С†РёСЏ" modal
             const handleAddCustomCategory = () => {
                 const name = normalizeCategory(newCategoryName);
                 if (!name) return;
@@ -772,13 +877,13 @@
             const saveCategoryFromModal = () => {
                 const name = normalizeCategory(categoryNameDraft);
                 if (!name) {
-                    setCategoryModalError('Введите название категории.');
+                    setCategoryModalError('Р’РІРµРґРёС‚Рµ РЅР°Р·РІР°РЅРёРµ РєР°С‚РµРіРѕСЂРёРё.');
                     return;
                 }
 
                 if (categoryModalMode === 'add') {
                     if (isTaken(name)) {
-                        setCategoryModalError('Такая категория уже существует.');
+                        setCategoryModalError('РўР°РєР°СЏ РєР°С‚РµРіРѕСЂРёСЏ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚.');
                         return;
                     }
 
@@ -788,7 +893,7 @@
                     const nextLimits = applyCategoryLimitToMap(categoryLimits, name, categoryLimitDraft);
                     setCategoryLimits(nextLimits);
 
-                    // удобство: сразу выбрать добавленную категорию
+                    // СѓРґРѕР±СЃС‚РІРѕ: СЃСЂР°Р·Сѓ РІС‹Р±СЂР°С‚СЊ РґРѕР±Р°РІР»РµРЅРЅСѓСЋ РєР°С‚РµРіРѕСЂРёСЋ
                     setNewTrans(prev => ({ ...prev, category: name }));
 
                     setCategoryLimitOpen(false);
@@ -803,7 +908,7 @@
                 }
 
                 if (isTaken(name, oldName)) {
-                    setCategoryModalError('Категория с таким названием уже есть.');
+                    setCategoryModalError('РљР°С‚РµРіРѕСЂРёСЏ СЃ С‚Р°РєРёРј РЅР°Р·РІР°РЅРёРµРј СѓР¶Рµ РµСЃС‚СЊ.');
                     return;
                 }
 
@@ -822,7 +927,7 @@
                 nextLimits = applyCategoryLimitToMap(nextLimits, name, categoryLimitDraft);
                 setCategoryLimits(nextLimits);
 
-                // rename in transactions history (to avoid "призрачных" категорий)
+                // rename in transactions history (to avoid "РїСЂРёР·СЂР°С‡РЅС‹С…" РєР°С‚РµРіРѕСЂРёР№)
                 if (oldName !== name) {
                     setTransactions((transactions || []).map(t => (t.category === oldName ? { ...t, category: name } : t)));
                     if (newTrans.category === oldName) setNewTrans(prev => ({ ...prev, category: name }));
@@ -857,11 +962,11 @@
                     {/* Header */}
                     <header className="pt-4 flex justify-between items-end">
                         <div>
-                            <p className={THEME.label}>Текущий баланс</p>
+                            <p className={THEME.label}>РўРµРєСѓС‰РёР№ Р±Р°Р»Р°РЅСЃ</p>
                             <div className="flex items-center gap-3 mt-1">
                                 <div className="flex items-baseline gap-2">
                                     <h1 className="text-4xl font-extrabold text-slate-800">{totalBalance.toLocaleString('ru-RU')}</h1>
-                                    <span className="text-2xl font-bold text-slate-400">₽</span>
+                                    <span className="text-2xl font-bold text-slate-400">в‚Ѕ</span>
                                 </div>
                                 <div className="flex gap-2">
                                     <PressableScale onClick={() => { setManualBalanceInput(String(totalBalance)); setEditBalanceOpen(true); }} className="bg-white p-2.5 rounded-2xl border border-slate-100 shadow-sm text-slate-400">
@@ -882,8 +987,8 @@
                                 <Icons.Receipt className="w-6 h-6 text-emerald-500" />
                             </div>
                             <div>
-                                <h3 className="text-slate-800 font-bold text-lg">Операции</h3>
-                                <p className="text-slate-400 text-xs font-bold uppercase">История</p>
+                                <h3 className="text-slate-800 font-bold text-lg">РћРїРµСЂР°С†РёРё</h3>
+                                <p className="text-slate-400 text-xs font-bold uppercase">РСЃС‚РѕСЂРёСЏ</p>
                             </div>
                         </PressableScale>
 
@@ -892,8 +997,8 @@
                                 <Icons.Landmark className="w-6 h-6 text-violet-500" />
                             </div>
                             <div>
-                                <h3 className="text-slate-800 font-bold text-lg">Платежи</h3>
-                                <p className="text-slate-400 text-xs font-bold uppercase">Счета</p>
+                                <h3 className="text-slate-800 font-bold text-lg">РџР»Р°С‚РµР¶Рё</h3>
+                                <p className="text-slate-400 text-xs font-bold uppercase">РЎС‡РµС‚Р°</p>
                             </div>
                         </PressableScale>
                     </div>
@@ -903,13 +1008,13 @@
                         <div className="flex justify-between items-end mb-3">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <p className={THEME.label}>Лимит расходов</p>
+                                    <p className={THEME.label}>Р›РёРјРёС‚ СЂР°СЃС…РѕРґРѕРІ</p>
                                     <PressableScale onClick={() => { setManualLimitInput(String(monthLimit)); setEditLimitOpen(true); }} className="bg-slate-100 p-1 rounded-full text-slate-400">
                                         <Icons.Pencil className="w-3 h-3" />
                                     </PressableScale>
                                 </div>
                                 <p className="text-2xl font-bold text-slate-800">
-                                    {spentThisMonth.toLocaleString()} <span className="text-slate-300 text-lg">/ {monthLimit.toLocaleString()} ₽</span>
+                                    {spentThisMonth.toLocaleString()} <span className="text-slate-300 text-lg">/ {monthLimit.toLocaleString()} в‚Ѕ</span>
                                 </p>
                             </div>
                             <span className="text-sm font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-xl">{Math.round(progress)}%</span>
@@ -924,21 +1029,21 @@
 
                     {/* Category Limits */}
                     <section>
-                        <SectionHeader title="Лимиты по категориям" actionLabel="+ Добавить категорию" onAction={openAddCategoryModal} />
+                        <SectionHeader title="Р›РёРјРёС‚С‹ РїРѕ РєР°С‚РµРіРѕСЂРёСЏРј" actionLabel="+ Р”РѕР±Р°РІРёС‚СЊ РєР°С‚РµРіРѕСЂРёСЋ" onAction={openAddCategoryModal} />
                         <BentoCard className="!p-4">
-                            <p className="text-xs text-slate-400 font-medium mb-3">Нажмите на карандаш, чтобы переименовать категорию, настроить лимит или удалить её.</p>
+                            <p className="text-xs text-slate-400 font-medium mb-3">РќР°Р¶РјРёС‚Рµ РЅР° РєР°СЂР°РЅРґР°С€, С‡С‚РѕР±С‹ РїРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ РєР°С‚РµРіРѕСЂРёСЋ, РЅР°СЃС‚СЂРѕРёС‚СЊ Р»РёРјРёС‚ РёР»Рё СѓРґР°Р»РёС‚СЊ РµС‘.</p>
 
                             {(categories || []).length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-10 text-slate-300 border-2 border-dashed border-slate-100 rounded-3xl">
                                     <Icons.PieChart className="w-12 h-12 mb-3 opacity-50" />
-                                    <p className="text-sm font-medium">Категорий пока нет</p>
-                                    <p className="text-xs">Добавьте первую категорию, чтобы настроить лимиты</p>
+                                    <p className="text-sm font-medium">РљР°С‚РµРіРѕСЂРёР№ РїРѕРєР° РЅРµС‚</p>
+                                    <p className="text-xs">Р”РѕР±Р°РІСЊС‚Рµ РїРµСЂРІСѓСЋ РєР°С‚РµРіРѕСЂРёСЋ, С‡С‚РѕР±С‹ РЅР°СЃС‚СЂРѕРёС‚СЊ Р»РёРјРёС‚С‹</p>
                                     <button
                                         onClick={openAddCategoryModal}
                                         className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-900 text-white font-bold"
                                     >
                                         <Icons.Plus className="w-4 h-4" />
-                                        Добавить категорию
+                                        Р”РѕР±Р°РІРёС‚СЊ РєР°С‚РµРіРѕСЂРёСЋ
                                     </button>
                                 </div>
                             ) : (
@@ -957,11 +1062,11 @@
                                                         <div className="flex items-center gap-2">
                                                             <p className="font-extrabold text-slate-800 truncate">{cat}</p>
                                                             {over && (
-                                                                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">превышен</span>
+                                                                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">РїСЂРµРІС‹С€РµРЅ</span>
                                                             )}
                                                         </div>
                                                         <p className="text-xs text-slate-500 font-bold mt-1">
-                                                            {spent.toLocaleString('ru-RU')} ₽{hasLimit ? ` / ${lim.toLocaleString('ru-RU')} ₽` : ' • лимит не задан'}
+                                                            {spent.toLocaleString('ru-RU')} в‚Ѕ{hasLimit ? ` / ${lim.toLocaleString('ru-RU')} в‚Ѕ` : ' вЂў Р»РёРјРёС‚ РЅРµ Р·Р°РґР°РЅ'}
                                                         </p>
                                                     </div>
 
@@ -974,7 +1079,7 @@
                                                         <button
                                                             onClick={() => openEditCategoryModal(cat)}
                                                             className="p-2 rounded-xl bg-white border border-slate-100 shadow-sm text-slate-400 hover:text-slate-700"
-                                                            title="Настроить категорию"
+                                                            title="РќР°СЃС‚СЂРѕРёС‚СЊ РєР°С‚РµРіРѕСЂРёСЋ"
                                                         >
                                                             <Icons.Pencil className="w-4 h-4" />
                                                         </button>
@@ -999,7 +1104,7 @@
                                         onClick={openAddCategoryModal}
                                         className="w-full mt-1 py-3 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 font-bold hover:bg-slate-50"
                                     >
-                                        + Добавить категорию
+                                        + Р”РѕР±Р°РІРёС‚СЊ РєР°С‚РµРіРѕСЂРёСЋ
                                     </button>
                                 </div>
                             )}
@@ -1008,7 +1113,7 @@
 
                     {/* Goals */}
                     <section>
-                        <SectionHeader title="Финансовые цели" actionLabel="+ Цель" onAction={openAddGoalModal} />
+                        <SectionHeader title="Р¤РёРЅР°РЅСЃРѕРІС‹Рµ С†РµР»Рё" actionLabel="+ Р¦РµР»СЊ" onAction={openAddGoalModal} />
                         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
                             {goals.map((goal) => {
                                 const dailySave = calculateDailySavings(goal.targetAmount, goal.currentAmount, goal.date);
@@ -1025,7 +1130,7 @@
 
                                         <h3 className="font-bold text-slate-800 text-lg mb-1">{goal.title}</h3>
                                         <p className="text-sm text-slate-500 mb-3">
-                                            {goal.currentAmount.toLocaleString()} / {goal.targetAmount.toLocaleString()} ₽
+                                            {goal.currentAmount.toLocaleString()} / {goal.targetAmount.toLocaleString()} в‚Ѕ
                                         </p>
 
                                         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-3">
@@ -1035,7 +1140,7 @@
                                         <div className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl">
                                             <Icons.Clock className="w-4 h-4 text-slate-400" />
                                             <p className="text-xs text-slate-500">
-                                                По <span className="font-bold text-slate-800">{dailySave} ₽</span> в день
+                                                РџРѕ <span className="font-bold text-slate-800">{dailySave} в‚Ѕ</span> РІ РґРµРЅСЊ
                                             </p>
                                         </div>
                                     </PressableScale>
@@ -1052,10 +1157,10 @@
 
                     {/* Edit Balance Modal */}
                     {isEditBalanceOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                             <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onClick={() => setEditBalanceOpen(false)} />
-                            <div className="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl relative animate-zoomIn">
-                                <h2 className="text-lg font-bold text-center text-slate-800 mb-6">Баланс</h2>
+                            <div className="bg-white w-full max-w-xs rounded-3xl p-5 shadow-2xl relative animate-zoomIn mx-4">
+                                <h2 className="text-lg font-bold text-center text-slate-800 mb-6">Р‘Р°Р»Р°РЅСЃ</h2>
                                 <input
                                     type="number"
                                     value={manualBalanceInput}
@@ -1064,7 +1169,7 @@
                                     autoFocus
                                 />
                                 <div className="flex gap-3">
-                                    <button onClick={() => setEditBalanceOpen(false)} className="flex-1 h-12 bg-slate-50 rounded-2xl font-bold text-slate-400">Отмена</button>
+                                    <button onClick={() => setEditBalanceOpen(false)} className="flex-1 h-12 bg-slate-50 rounded-2xl font-bold text-slate-400">РћС‚РјРµРЅР°</button>
                                     <button onClick={handleManualBalanceUpdate} className="flex-1 h-12 bg-slate-900 rounded-2xl font-bold text-white">OK</button>
                                 </div>
                             </div>
@@ -1073,10 +1178,10 @@
 
                     {/* Edit Limit Modal */}
                     {isEditLimitOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                             <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onClick={() => setEditLimitOpen(false)} />
-                            <div className="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl relative animate-zoomIn">
-                                <h2 className="text-lg font-bold text-center text-slate-800 mb-6">Лимит</h2>
+                            <div className="bg-white w-full max-w-xs rounded-3xl p-5 shadow-2xl relative animate-zoomIn mx-4">
+                                <h2 className="text-lg font-bold text-center text-slate-800 mb-6">Р›РёРјРёС‚</h2>
                                 <input
                                     type="number"
                                     value={manualLimitInput}
@@ -1085,7 +1190,7 @@
                                     autoFocus
                                 />
                                 <div className="flex gap-3">
-                                    <button onClick={() => setEditLimitOpen(false)} className="flex-1 h-12 bg-slate-50 rounded-2xl font-bold text-slate-400">Отмена</button>
+                                    <button onClick={() => setEditLimitOpen(false)} className="flex-1 h-12 bg-slate-50 rounded-2xl font-bold text-slate-400">РћС‚РјРµРЅР°</button>
                                     <button onClick={handleManualLimitUpdate} className="flex-1 h-12 bg-slate-900 rounded-2xl font-bold text-white">OK</button>
                                 </div>
                             </div>
@@ -1094,13 +1199,13 @@
 
                     {/* Statistics Modal */}
                     {isStatsOpen && (
-                        <div className="fixed inset-0 z-50 flex items-end">
+                        <div className="fixed inset-0 z-50 flex items-end overflow-hidden">
                             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setStatsOpen(false)} />
-                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl h-[80vh] shadow-2xl relative animate-slideUp flex flex-col overflow-hidden">
+                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl h-[85vh] max-h-[85vh] shadow-2xl relative animate-slideUp flex flex-col overflow-hidden">
                                 <div className="flex justify-between items-center p-6 pb-2 bg-white">
                                     <div>
-                                        <h2 className="text-2xl font-bold text-slate-900">Статистика</h2>
-                                        <p className="text-slate-500 text-sm">Расходы по категориям</p>
+                                        <h2 className="text-2xl font-bold text-slate-900">РЎС‚Р°С‚РёСЃС‚РёРєР°</h2>
+                                        <p className="text-slate-500 text-sm">Р Р°СЃС…РѕРґС‹ РїРѕ РєР°С‚РµРіРѕСЂРёСЏРј</p>
                                     </div>
                                     <button onClick={() => setStatsOpen(false)} className="bg-slate-50 p-2 rounded-full text-slate-400"><Icons.X className="w-5 h-5" /></button>
                                 </div>
@@ -1110,7 +1215,7 @@
                                             <div className="flex justify-between items-center mb-3">
                                                 <div className="flex items-center gap-2">
                                                     <Icons.Sparkles className="w-5 h-5 text-indigo-500" />
-                                                    <span className="text-xs font-black text-indigo-900 uppercase">AI Анализ</span>
+                                                    <span className="text-xs font-black text-indigo-900 uppercase">AI РђРЅР°Р»РёР·</span>
                                                 </div>
                                                 <PressableScale onClick={getFinancialAdvice} disabled={loading}>
                                                     <div className="bg-white p-2 rounded-full shadow-sm text-indigo-500">
@@ -1119,7 +1224,7 @@
                                                 </PressableScale>
                                             </div>
                                             <p className="text-indigo-900 text-sm leading-relaxed font-semibold">
-                                                {advice || "Нажмите на палочку для AI-анализа ✨"}
+                                                {advice || "РќР°Р¶РјРёС‚Рµ РЅР° РїР°Р»РѕС‡РєСѓ РґР»СЏ AI-Р°РЅР°Р»РёР·Р° вњЁ"}
                                             </p>
                                         </div>
                                         <div className="space-y-5">
@@ -1131,7 +1236,7 @@
                                                             <div className="flex justify-between items-end px-1">
                                                                 <span className="font-bold text-slate-700">{item.name}</span>
                                                                 <div className="flex items-baseline gap-2">
-                                                                    <span className="font-bold text-slate-900">{item.amount.toLocaleString()} ₽</span>
+                                                                    <span className="font-bold text-slate-900">{item.amount.toLocaleString()} в‚Ѕ</span>
                                                                     <span className="text-xs text-slate-400 font-bold bg-slate-50 px-1.5 py-0.5 rounded">{percentage}%</span>
                                                                 </div>
                                                             </div>
@@ -1144,7 +1249,7 @@
                                             ) : (
                                                 <div className="py-20 text-center text-slate-300">
                                                     <Icons.PieChart className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                                                    <p className="font-medium">Нет данных о расходах</p>
+                                                    <p className="font-medium">РќРµС‚ РґР°РЅРЅС‹С… Рѕ СЂР°СЃС…РѕРґР°С…</p>
                                                 </div>
                                             )}
                                         </div>
@@ -1156,13 +1261,13 @@
 
                     {/* Daily Operations Modal */}
                     {isDailyOpen && (
-                        <div className="fixed inset-0 z-50 flex items-end">
+                        <div className="fixed inset-0 z-50 flex items-end overflow-hidden">
                             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setDailyOpen(false)} />
-                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl h-[90vh] shadow-2xl relative animate-slideUp flex flex-col overflow-hidden">
+                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl h-[92vh] max-h-[92vh] shadow-2xl relative animate-slideUp flex flex-col overflow-hidden">
                                 <div className="flex justify-between items-center p-6 pb-2 bg-white">
                                     <div>
-                                        <h2 className="text-2xl font-bold text-slate-900">Операции</h2>
-                                        <p className="text-slate-500 text-sm">История и Календарь</p>
+                                        <h2 className="text-2xl font-bold text-slate-900">РћРїРµСЂР°С†РёРё</h2>
+                                        <p className="text-slate-500 text-sm">РСЃС‚РѕСЂРёСЏ Рё РљР°Р»РµРЅРґР°СЂСЊ</p>
                                     </div>
                                     <button onClick={() => setDailyOpen(false)} className="bg-slate-100 p-2 rounded-full text-slate-400"><Icons.X className="w-5 h-5" /></button>
                                 </div>
@@ -1187,7 +1292,7 @@
                                         }}
                                     />
                                     <div className="space-y-3 pb-4">
-                                        <SectionHeader title={`Операции за ${selectedDateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}`} />
+                                        <SectionHeader title={`РћРїРµСЂР°С†РёРё Р·Р° ${selectedDateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}`} />
                                         {filteredTransactions.length > 0 ? (
                                             filteredTransactions.map(t => (
                                                 <div key={t.id} className="flex justify-between items-center p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
@@ -1201,14 +1306,14 @@
                                                         </div>
                                                     </div>
                                                     <span className={`font-mono font-bold ${t.type === 'income' ? 'text-emerald-500' : 'text-slate-900'}`}>
-                                                        {t.type === 'income' ? '+' : '-'}{t.amount} ₽
+                                                        {t.type === 'income' ? '+' : '-'}{t.amount} в‚Ѕ
                                                     </span>
                                                 </div>
                                             ))
                                         ) : (
                                             <div className="flex flex-col items-center justify-center h-40 text-slate-300 border-2 border-dashed border-slate-100 rounded-3xl">
                                                 <Icons.Receipt className="w-10 h-10 mb-2 opacity-50" />
-                                                <p className="text-sm font-medium">Нет операций</p>
+                                                <p className="text-sm font-medium">РќРµС‚ РѕРїРµСЂР°С†РёР№</p>
                                             </div>
                                         )}
                                     </div>
@@ -1217,7 +1322,7 @@
                                     <PressableScale onClick={() => setAddTransOpen(true)} className="w-full">
                                         <div className="bg-slate-900 h-14 rounded-3xl flex items-center justify-center shadow-xl">
                                             <Icons.Plus className="w-6 h-6 text-white mr-2" />
-                                            <span className="text-white font-bold text-lg">Добавить операцию</span>
+                                            <span className="text-white font-bold text-lg">Р”РѕР±Р°РІРёС‚СЊ РѕРїРµСЂР°С†РёСЋ</span>
                                         </div>
                                     </PressableScale>
                                 </div>
@@ -1227,22 +1332,22 @@
 
                     {/* Add Transaction Modal */}
                     {isAddTransOpen && (
-                        <div className="fixed inset-0 z-[60] flex items-end">
+                        <div className="fixed inset-0 z-[60] flex items-end overflow-hidden">
                             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setAddTransOpen(false)} />
-                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-6 space-y-5 shadow-2xl relative animate-slideUp max-h-[85vh] overflow-y-auto">
+                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-5 space-y-4 shadow-2xl relative animate-slideUp max-h-[90vh] overflow-y-auto scrollbar-hide">
                                 <div className="flex justify-between items-center">
-                                    <h2 className="text-2xl font-bold text-slate-900">Новая операция</h2>
+                                    <h2 className="text-2xl font-bold text-slate-900">РќРѕРІР°СЏ РѕРїРµСЂР°С†РёСЏ</h2>
                                     <button onClick={() => setAddTransOpen(false)} className="bg-slate-50 p-2 rounded-full text-slate-400"><Icons.X className="w-5 h-5" /></button>
                                 </div>
 
                                 <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl">
-                                    <button onClick={() => setNewTrans({ ...newTrans, type: 'expense' })} className={`flex-1 py-3 rounded-xl font-bold transition-all ${newTrans.type === 'expense' ? 'bg-white shadow text-slate-900' : 'text-slate-400'}`}>Расход</button>
-                                    <button onClick={() => setNewTrans({ ...newTrans, type: 'income' })} className={`flex-1 py-3 rounded-xl font-bold transition-all ${newTrans.type === 'income' ? 'bg-white shadow text-slate-900' : 'text-slate-400'}`}>Доход</button>
+                                    <button onClick={() => setNewTrans({ ...newTrans, type: 'expense' })} className={`flex-1 py-3 rounded-xl font-bold transition-all ${newTrans.type === 'expense' ? 'bg-white shadow text-slate-900' : 'text-slate-400'}`}>Р Р°СЃС…РѕРґ</button>
+                                    <button onClick={() => setNewTrans({ ...newTrans, type: 'income' })} className={`flex-1 py-3 rounded-xl font-bold transition-all ${newTrans.type === 'income' ? 'bg-white shadow text-slate-900' : 'text-slate-400'}`}>Р”РѕС…РѕРґ</button>
                                 </div>
 
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Сумма</label>
+                                        <label className={THEME.label}>РЎСѓРјРјР°</label>
                                         <input
                                             type="number"
                                             value={newTrans.amount}
@@ -1252,18 +1357,18 @@
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Название</label>
+                                        <label className={THEME.label}>РќР°Р·РІР°РЅРёРµ</label>
                                         <input
                                             value={newTrans.title}
                                             onChange={e => setNewTrans({ ...newTrans, title: e.target.value })}
-                                            placeholder="Напр: Продукты"
+                                            placeholder="РќР°РїСЂ: РџСЂРѕРґСѓРєС‚С‹"
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Категория</label>
+                                        <label className={THEME.label}>РљР°С‚РµРіРѕСЂРёСЏ</label>
 
-                                        {/* Список категорий */}
+                                        {/* РЎРїРёСЃРѕРє РєР°С‚РµРіРѕСЂРёР№ */}
                                         <div className="flex flex-wrap gap-2">
                                             {categories.map(cat => {
                                                 const isCustom = (customCategories || []).includes(cat);
@@ -1278,7 +1383,7 @@
                                                         </button>
                                                         {isCustom && (
                                                             <button
-                                                                title="Удалить категорию"
+                                                                title="РЈРґР°Р»РёС‚СЊ РєР°С‚РµРіРѕСЂРёСЋ"
                                                                 onClick={() => removeCustomCategory(cat)}
                                                                 className={`ml-1 p-2 rounded-xl transition-colors ${selected ? 'bg-slate-900 text-white/70 hover:text-white' : 'bg-slate-100 text-slate-300 hover:text-rose-500 hover:bg-rose-50'}`}
                                                             >
@@ -1290,21 +1395,21 @@
                                             })}
                                         </div>
 
-                                        {/* Добавление новой категории */}
+                                        {/* Р”РѕР±Р°РІР»РµРЅРёРµ РЅРѕРІРѕР№ РєР°С‚РµРіРѕСЂРёРё */}
                                         {!isAddingCategory ? (
                                             <button
                                                 onClick={() => setIsAddingCategory(true)}
                                                 className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-100"
                                             >
                                                 <Icons.Plus className="w-4 h-4" />
-                                                Добавить категорию
+                                                Р”РѕР±Р°РІРёС‚СЊ РєР°С‚РµРіРѕСЂРёСЋ
                                             </button>
                                         ) : (
                                             <div className="mt-2 flex gap-2">
                                                 <input
                                                     value={newCategoryName}
                                                     onChange={(e) => setNewCategoryName(e.target.value)}
-                                                    placeholder="Напр: Кофе"
+                                                    placeholder="РќР°РїСЂ: РљРѕС„Рµ"
                                                     className="flex-1 bg-slate-50 rounded-2xl py-3 px-4 font-bold text-slate-800 outline-none"
                                                     autoFocus
                                                 />
@@ -1327,7 +1432,7 @@
 
                                 <PressableScale onClick={handleAddTransaction} className="w-full pt-2">
                                     <div className={`h-14 rounded-3xl flex items-center justify-center shadow-xl ${newTrans.type === 'expense' ? 'bg-rose-500' : 'bg-emerald-500'}`}>
-                                        <span className="text-white font-bold text-lg">Добавить</span>
+                                        <span className="text-white font-bold text-lg">Р”РѕР±Р°РІРёС‚СЊ</span>
                                     </div>
                                 </PressableScale>
                             </div>
@@ -1336,13 +1441,13 @@
 
                     {/* Bills Modal with Calendar */}
                     {isBillsOpen && (
-                        <div className="fixed inset-0 z-50 flex items-end">
+                        <div className="fixed inset-0 z-50 flex items-end overflow-hidden">
                             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setBillsOpen(false)} />
-                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl h-[90vh] shadow-2xl relative animate-slideUp flex flex-col overflow-hidden">
+                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl h-[92vh] max-h-[92vh] shadow-2xl relative animate-slideUp flex flex-col overflow-hidden">
                                 <div className="flex justify-between items-center p-6 pb-2 bg-white">
                                     <div>
-                                        <h2 className="text-2xl font-bold text-slate-900">Платежи</h2>
-                                        <p className="text-slate-500 text-sm">Регулярные счета</p>
+                                        <h2 className="text-2xl font-bold text-slate-900">РџР»Р°С‚РµР¶Рё</h2>
+                                        <p className="text-slate-500 text-sm">Р РµРіСѓР»СЏСЂРЅС‹Рµ СЃС‡РµС‚Р°</p>
                                     </div>
                                     <button onClick={() => setBillsOpen(false)} className="bg-slate-100 p-2 rounded-full text-slate-400"><Icons.X className="w-5 h-5" /></button>
                                 </div>
@@ -1368,7 +1473,7 @@
                                         }}
                                     />
 
-                                    <SectionHeader title={`Платежи за ${selectedBillDateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}`} />
+                                    <SectionHeader title={`РџР»Р°С‚РµР¶Рё Р·Р° ${selectedBillDateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}`} />
                                     <div className="space-y-3">
                                         {filteredBills.length > 0 ? filteredBills.map(bill => (
                                             <div key={bill.id} className={`p-5 rounded-2xl border transition-all ${bill.paid ? 'bg-emerald-50 border-emerald-100' : 'bg-white border-slate-100 shadow-sm'}`}>
@@ -1379,11 +1484,11 @@
                                                         </button>
                                                         <div>
                                                             <h3 className={`font-bold ${bill.paid ? 'text-emerald-700 line-through' : 'text-slate-800'}`}>{bill.title}</h3>
-                                                            <p className="text-xs text-slate-400">Каждое {bill.date} число</p>
+                                                            <p className="text-xs text-slate-400">РљР°Р¶РґРѕРµ {bill.date} С‡РёСЃР»Рѕ</p>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`font-mono font-bold ${bill.paid ? 'text-emerald-600' : 'text-slate-900'}`}>{bill.amount.toLocaleString()} ₽</span>
+                                                        <span className={`font-mono font-bold ${bill.paid ? 'text-emerald-600' : 'text-slate-900'}`}>{bill.amount.toLocaleString()} в‚Ѕ</span>
                                                         <button onClick={() => deleteBill(bill.id)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-300 hover:text-rose-500">
                                                             <Icons.Trash className="w-4 h-4" />
                                                         </button>
@@ -1393,13 +1498,13 @@
                                         )) : (
                                             <div className="flex flex-col items-center justify-center h-32 text-slate-300 border-2 border-dashed border-slate-100 rounded-3xl">
                                                 <Icons.Landmark className="w-10 h-10 mb-2 opacity-50" />
-                                                <p className="text-sm font-medium">Нет платежей на эту дату</p>
+                                                <p className="text-sm font-medium">РќРµС‚ РїР»Р°С‚РµР¶РµР№ РЅР° СЌС‚Сѓ РґР°С‚Сѓ</p>
                                             </div>
                                         )}
 
                                         {/* All bills summary */}
                                         <div className="mt-6 pt-4 border-t border-slate-100">
-                                            <p className={`${THEME.label} mb-3`}>Все платежи</p>
+                                            <p className={`${THEME.label} mb-3`}>Р’СЃРµ РїР»Р°С‚РµР¶Рё</p>
                                             <div className="space-y-2">
                                                 {bills.map(bill => (
                                                     <div key={bill.id} className="flex justify-between items-center py-2">
@@ -1407,7 +1512,7 @@
                                                             <div className={`w-2 h-2 rounded-full ${bill.paid ? 'bg-emerald-400' : 'bg-rose-400'}`} />
                                                             <span className="text-sm text-slate-600">{bill.title}</span>
                                                         </div>
-                                                        <span className="text-sm font-medium text-slate-400">{bill.date} число</span>
+                                                        <span className="text-sm font-medium text-slate-400">{bill.date} С‡РёСЃР»Рѕ</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -1418,7 +1523,7 @@
                                     <PressableScale onClick={() => setAddBillOpen(true)} className="w-full">
                                         <div className="bg-violet-500 h-14 rounded-3xl flex items-center justify-center shadow-xl">
                                             <Icons.Plus className="w-6 h-6 text-white mr-2" />
-                                            <span className="text-white font-bold text-lg">Добавить платёж</span>
+                                            <span className="text-white font-bold text-lg">Р”РѕР±Р°РІРёС‚СЊ РїР»Р°С‚С‘Р¶</span>
                                         </div>
                                     </PressableScale>
                                 </div>
@@ -1428,22 +1533,22 @@
 
                     {/* Add Bill Modal */}
                     {isAddBillOpen && (
-                        <div className="fixed inset-0 z-[60] flex items-end">
+                        <div className="fixed inset-0 z-[60] flex items-end overflow-hidden">
                             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setAddBillOpen(false)} />
-                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-6 space-y-5 shadow-2xl relative animate-slideUp max-h-[85vh] overflow-y-auto">
-                                <h2 className="text-2xl font-bold text-slate-900">Новый платёж</h2>
+                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-5 space-y-4 shadow-2xl relative animate-slideUp max-h-[90vh] overflow-y-auto scrollbar-hide">
+                                <h2 className="text-2xl font-bold text-slate-900">РќРѕРІС‹Р№ РїР»Р°С‚С‘Р¶</h2>
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Название</label>
+                                        <label className={THEME.label}>РќР°Р·РІР°РЅРёРµ</label>
                                         <input
                                             value={newBill.title}
                                             onChange={e => setNewBill({ ...newBill, title: e.target.value })}
-                                            placeholder="Напр: Аренда"
+                                            placeholder="РќР°РїСЂ: РђСЂРµРЅРґР°"
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Сумма</label>
+                                        <label className={THEME.label}>РЎСѓРјРјР°</label>
                                         <input
                                             type="number"
                                             value={newBill.amount}
@@ -1453,10 +1558,10 @@
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Дата оплаты</label>
+                                        <label className={THEME.label}>Р”Р°С‚Р° РѕРїР»Р°С‚С‹</label>
                                         <div className="text-sm font-bold text-slate-700 bg-slate-50 rounded-2xl px-4 py-3">
                                             {selectedBillDateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                            <span className="text-slate-400 font-semibold"> • день месяца: {selectedBillDateObj.getDate()}</span>
+                                            <span className="text-slate-400 font-semibold"> вЂў РґРµРЅСЊ РјРµСЃСЏС†Р°: {selectedBillDateObj.getDate()}</span>
                                         </div>
                                         <MonthCalendar
                                             viewMonth={billsViewMonth}
@@ -1481,7 +1586,7 @@
                                 </div>
                                 <PressableScale onClick={handleAddBill} className="w-full pt-2">
                                     <div className="bg-violet-500 h-14 rounded-3xl flex items-center justify-center shadow-xl">
-                                        <span className="text-white font-bold text-lg">Добавить</span>
+                                        <span className="text-white font-bold text-lg">Р”РѕР±Р°РІРёС‚СЊ</span>
                                     </div>
                                 </PressableScale>
                             </div>
@@ -1490,11 +1595,11 @@
 
                     {/* Category Modal (Add/Edit/Delete + Limit) */}
                     {isCategoryLimitOpen && (
-                        <div className="fixed inset-0 z-[70] flex items-end">
+                        <div className="fixed inset-0 z-[70] flex items-end overflow-hidden">
                             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setCategoryLimitOpen(false)} />
-                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-6 space-y-5 shadow-2xl relative animate-slideUp">
+                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-5 space-y-4 shadow-2xl relative animate-slideUp max-h-[90vh] overflow-y-auto scrollbar-hide">
                                 <div className="flex justify-between items-center">
-                                    <h2 className="text-2xl font-bold text-slate-900">{categoryModalMode === 'add' ? 'Новая категория' : 'Настройки категории'}</h2>
+                                    <h2 className="text-2xl font-bold text-slate-900">{categoryModalMode === 'add' ? 'РќРѕРІР°СЏ РєР°С‚РµРіРѕСЂРёСЏ' : 'РќР°СЃС‚СЂРѕР№РєРё РєР°С‚РµРіРѕСЂРёРё'}</h2>
                                     <button onClick={() => setCategoryLimitOpen(false)} className="bg-slate-50 p-2 rounded-full text-slate-400">
                                         <Icons.X className="w-5 h-5" />
                                     </button>
@@ -1502,26 +1607,26 @@
 
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Название</label>
+                                        <label className={THEME.label}>РќР°Р·РІР°РЅРёРµ</label>
                                         <input
                                             value={categoryNameDraft}
                                             onChange={(e) => { setCategoryNameDraft(e.target.value); setCategoryModalError(''); }}
-                                            placeholder="Напр: Рестораны"
+                                            placeholder="РќР°РїСЂ: Р РµСЃС‚РѕСЂР°РЅС‹"
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
                                             autoFocus
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Лимит (₽ в месяц)</label>
+                                        <label className={THEME.label}>Р›РёРјРёС‚ (в‚Ѕ РІ РјРµСЃСЏС†)</label>
                                         <input
                                             type="number"
                                             value={categoryLimitDraft}
                                             onChange={(e) => setCategoryLimitDraft(e.target.value)}
-                                            placeholder="Напр: 15000"
+                                            placeholder="РќР°РїСЂ: 15000"
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 font-mono text-2xl font-bold text-slate-900 outline-none"
                                         />
-                                        <p className="text-xs text-slate-400 font-medium">Оставьте пустым или 0, чтобы убрать лимит.</p>
+                                        <p className="text-xs text-slate-400 font-medium">РћСЃС‚Р°РІСЊС‚Рµ РїСѓСЃС‚С‹Рј РёР»Рё 0, С‡С‚РѕР±С‹ СѓР±СЂР°С‚СЊ Р»РёРјРёС‚.</p>
                                     </div>
 
                                     {categoryModalError && (
@@ -1534,17 +1639,17 @@
                                         <button
                                             onClick={deleteCategoryFromModal}
                                             className="w-full h-12 rounded-2xl bg-rose-500 text-white font-extrabold flex items-center justify-center gap-2 shadow-lg shadow-rose-200"
-                                            title="Удалить категорию"
+                                            title="РЈРґР°Р»РёС‚СЊ РєР°С‚РµРіРѕСЂРёСЋ"
                                         >
                                             <Icons.Trash className="w-5 h-5" />
-                                            Удалить категорию
+                                            РЈРґР°Р»РёС‚СЊ РєР°С‚РµРіРѕСЂРёСЋ
                                         </button>
                                     )}
                                 </div>
 
                                 <PressableScale onClick={saveCategoryFromModal} className="w-full pt-1">
                                     <div className="bg-slate-900 h-14 rounded-3xl flex items-center justify-center shadow-xl">
-                                        <span className="text-white font-bold text-lg">Сохранить</span>
+                                        <span className="text-white font-bold text-lg">РЎРѕС…СЂР°РЅРёС‚СЊ</span>
                                     </div>
                                 </PressableScale>
                             </div>
@@ -1553,11 +1658,11 @@
 
                     {/* Goal Modal */}
                     {isGoalModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-end">
+                        <div className="fixed inset-0 z-50 flex items-end overflow-hidden">
                             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setGoalModalOpen(false)} />
-                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-6 space-y-5 shadow-2xl relative animate-slideUp">
+                            <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-5 space-y-4 shadow-2xl relative animate-slideUp max-h-[90vh] overflow-y-auto scrollbar-hide">
                                 <div className="flex justify-between items-center">
-                                    <h2 className="text-2xl font-bold text-slate-900">{editingGoalId ? 'Редактирование' : 'Новая цель'}</h2>
+                                    <h2 className="text-2xl font-bold text-slate-900">{editingGoalId ? 'Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ' : 'РќРѕРІР°СЏ С†РµР»СЊ'}</h2>
                                     {editingGoalId && (
                                         <button onClick={handleDeleteGoal} className="bg-rose-50 p-3 rounded-full text-rose-500">
                                             <Icons.Trash className="w-5 h-5" />
@@ -1567,16 +1672,16 @@
 
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>На что копим?</label>
+                                        <label className={THEME.label}>РќР° С‡С‚Рѕ РєРѕРїРёРј?</label>
                                         <input
                                             value={goalForm.title}
                                             onChange={e => setGoalForm({ ...goalForm, title: e.target.value })}
-                                            placeholder="Напр: MacBook Pro"
+                                            placeholder="РќР°РїСЂ: MacBook Pro"
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Сумма цели</label>
+                                        <label className={THEME.label}>РЎСѓРјРјР° С†РµР»Рё</label>
                                         <input
                                             type="number"
                                             value={goalForm.targetAmount}
@@ -1587,7 +1692,7 @@
                                     </div>
                                     {editingGoalId && (
                                         <div className="space-y-2">
-                                            <label className={THEME.label}>Накоплено</label>
+                                            <label className={THEME.label}>РќР°РєРѕРїР»РµРЅРѕ</label>
                                             <input
                                                 type="number"
                                                 value={goalForm.currentAmount}
@@ -1598,7 +1703,7 @@
                                         </div>
                                     )}
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Дата цели</label>
+                                        <label className={THEME.label}>Р”Р°С‚Р° С†РµР»Рё</label>
                                         <input
                                             type="date"
                                             value={goalForm.date}
@@ -1610,7 +1715,7 @@
 
                                 <PressableScale onClick={handleSaveGoal} className="w-full pt-2">
                                     <div className="bg-emerald-500 h-14 rounded-3xl flex items-center justify-center shadow-xl">
-                                        <span className="text-white font-bold text-lg">{editingGoalId ? 'Сохранить' : 'Создать'}</span>
+                                        <span className="text-white font-bold text-lg">{editingGoalId ? 'РЎРѕС…СЂР°РЅРёС‚СЊ' : 'РЎРѕР·РґР°С‚СЊ'}</span>
                                     </div>
                                 </PressableScale>
                             </div>
@@ -1623,8 +1728,8 @@
         // --- Notes Tab ---
         const NotesTab = () => {
             const [notes, setNotes] = useLocalStorage('lifehub_notes', [
-                { id: '1', title: 'Идеи для проекта', content: 'Разработать мобильное приложение', color: 'bg-amber-100', createdAt: Date.now() },
-                { id: '2', title: 'Список покупок', content: 'Молоко, хлеб, яйца, сыр', color: 'bg-emerald-100', createdAt: Date.now() - 86400000 },
+                { id: '1', title: 'РРґРµРё РґР»СЏ РїСЂРѕРµРєС‚Р°', content: 'Р Р°Р·СЂР°Р±РѕС‚Р°С‚СЊ РјРѕР±РёР»СЊРЅРѕРµ РїСЂРёР»РѕР¶РµРЅРёРµ', color: 'bg-amber-100', createdAt: Date.now() },
+                { id: '2', title: 'РЎРїРёСЃРѕРє РїРѕРєСѓРїРѕРє', content: 'РњРѕР»РѕРєРѕ, С…Р»РµР±, СЏР№С†Р°, СЃС‹СЂ', color: 'bg-emerald-100', createdAt: Date.now() - 86400000 },
             ]);
             const [isAddOpen, setAddOpen] = useState(false);
             const [editingNote, setEditingNote] = useState(null);
@@ -1666,8 +1771,8 @@
                 <div className="space-y-6 animate-fadeIn">
                     <header className="pt-4 flex justify-between items-center">
                         <div>
-                            <p className={THEME.label}>Заметки</p>
-                            <h1 className="text-3xl font-extrabold text-slate-800 mt-1">Мои записи</h1>
+                            <p className={THEME.label}>Р—Р°РјРµС‚РєРё</p>
+                            <h1 className="text-3xl font-extrabold text-slate-800 mt-1">РњРѕРё Р·Р°РїРёСЃРё</h1>
                         </div>
                         <PressableScale onClick={openAdd} className="bg-amber-500 p-3 rounded-2xl shadow-lg text-white">
                             <Icons.Plus className="w-6 h-6" />
@@ -1689,7 +1794,7 @@
                     {notes.length === 0 && (
                         <div className="flex flex-col items-center justify-center h-60 text-slate-300">
                             <Icons.StickyNote className="w-16 h-16 mb-4 opacity-50" />
-                            <p className="font-medium">Нет заметок</p>
+                            <p className="font-medium">РќРµС‚ Р·Р°РјРµС‚РѕРє</p>
                         </div>
                     )}
 
@@ -1698,7 +1803,7 @@
                             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setAddOpen(false)} />
                             <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-6 space-y-5 shadow-2xl relative animate-slideUp">
                                 <div className="flex justify-between items-center">
-                                    <h2 className="text-2xl font-bold text-slate-900">{editingNote ? 'Редактирование' : 'Новая заметка'}</h2>
+                                    <h2 className="text-2xl font-bold text-slate-900">{editingNote ? 'Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ' : 'РќРѕРІР°СЏ Р·Р°РјРµС‚РєР°'}</h2>
                                     {editingNote && (
                                         <button onClick={handleDelete} className="bg-rose-50 p-3 rounded-full text-rose-500">
                                             <Icons.Trash className="w-5 h-5" />
@@ -1708,26 +1813,26 @@
 
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Заголовок</label>
+                                        <label className={THEME.label}>Р—Р°РіРѕР»РѕРІРѕРє</label>
                                         <input
                                             value={noteForm.title}
                                             onChange={e => setNoteForm({ ...noteForm, title: e.target.value })}
-                                            placeholder="Название заметки"
+                                            placeholder="РќР°Р·РІР°РЅРёРµ Р·Р°РјРµС‚РєРё"
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Содержание</label>
+                                        <label className={THEME.label}>РЎРѕРґРµСЂР¶Р°РЅРёРµ</label>
                                         <textarea
                                             value={noteForm.content}
                                             onChange={e => setNoteForm({ ...noteForm, content: e.target.value })}
-                                            placeholder="Текст заметки..."
+                                            placeholder="РўРµРєСЃС‚ Р·Р°РјРµС‚РєРё..."
                                             rows={4}
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 text-slate-800 outline-none resize-none"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Цвет</label>
+                                        <label className={THEME.label}>Р¦РІРµС‚</label>
                                         <div className="flex gap-2">
                                             {colors.map(color => (
                                                 <button
@@ -1742,7 +1847,7 @@
 
                                 <PressableScale onClick={handleSave} className="w-full pt-2">
                                     <div className="bg-amber-500 h-14 rounded-3xl flex items-center justify-center shadow-xl">
-                                        <span className="text-white font-bold text-lg">{editingNote ? 'Сохранить' : 'Создать'}</span>
+                                        <span className="text-white font-bold text-lg">{editingNote ? 'РЎРѕС…СЂР°РЅРёС‚СЊ' : 'РЎРѕР·РґР°С‚СЊ'}</span>
                                     </div>
                                 </PressableScale>
                             </div>
@@ -1752,13 +1857,13 @@
             );
         };
 
-        // --- Birthdays Tab (События → напоминания о Днях рождения) ---
+        // --- Birthdays Tab (РЎРѕР±С‹С‚РёСЏ в†’ РЅР°РїРѕРјРёРЅР°РЅРёСЏ Рѕ Р”РЅСЏС… СЂРѕР¶РґРµРЅРёСЏ) ---
         const EventsTab = () => {
-            const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+            const monthNames = ['РЇРЅРІР°СЂСЊ','Р¤РµРІСЂР°Р»СЊ','РњР°СЂС‚','РђРїСЂРµР»СЊ','РњР°Р№','РСЋРЅСЊ','РСЋР»СЊ','РђРІРіСѓСЃС‚','РЎРµРЅС‚СЏР±СЂСЊ','РћРєС‚СЏР±СЂСЊ','РќРѕСЏР±СЂСЊ','Р”РµРєР°Р±СЂСЊ'];
 
             const [birthdays, setBirthdays] = useLocalStorage('lifehub_birthdays', [
-                { id: 'b1', name: 'Мама', day: 22, month: 7, year: 1965, note: 'Купить цветы', createdAt: Date.now() },
-                { id: 'b2', name: 'Аня', day: 3, month: 3, year: 1998, note: 'Подарок: сертификат', createdAt: Date.now() },
+                { id: 'b1', name: 'РњР°РјР°', day: 22, month: 7, year: 1965, note: 'РљСѓРїРёС‚СЊ С†РІРµС‚С‹', createdAt: Date.now() },
+                { id: 'b2', name: 'РђРЅСЏ', day: 3, month: 3, year: 1998, note: 'РџРѕРґР°СЂРѕРє: СЃРµСЂС‚РёС„РёРєР°С‚', createdAt: Date.now() },
             ]);
 
             const today = useMemo(() => {
@@ -1776,7 +1881,7 @@
             const safeDate = (year, monthIndex, day) => {
                 const d = new Date(year, monthIndex, day);
                 if (d.getMonth() !== monthIndex) {
-                    // Например, 31 апреля → берём последний день месяца
+                    // РќР°РїСЂРёРјРµСЂ, 31 Р°РїСЂРµР»СЏ в†’ Р±РµСЂС‘Рј РїРѕСЃР»РµРґРЅРёР№ РґРµРЅСЊ РјРµСЃСЏС†Р°
                     return new Date(year, monthIndex + 1, 0);
                 }
                 return d;
@@ -1840,7 +1945,7 @@
             }, [viewMonth]);
 
             const firstWeekdayMondayBased = useMemo(() => {
-                // JS: 0=Вс..6=Сб → делаем 0=Пн..6=Вс
+                // JS: 0=Р’СЃ..6=РЎР± в†’ РґРµР»Р°РµРј 0=РџРЅ..6=Р’СЃ
                 const js = new Date(viewMonth.getFullYear(), viewMonth.getMonth(), 1).getDay();
                 return (js + 6) % 7;
             }, [viewMonth]);
@@ -1882,7 +1987,7 @@
                 setViewMonth(new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1));
             };
 
-            // Если пользователь выбрал дату вне текущего отображаемого месяца — синхронизируем, чтобы не было «пропажи» выделения.
+            // Р•СЃР»Рё РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ РІС‹Р±СЂР°Р» РґР°С‚Сѓ РІРЅРµ С‚РµРєСѓС‰РµРіРѕ РѕС‚РѕР±СЂР°Р¶Р°РµРјРѕРіРѕ РјРµСЃСЏС†Р° вЂ” СЃРёРЅС…СЂРѕРЅРёР·РёСЂСѓРµРј, С‡С‚РѕР±С‹ РЅРµ Р±С‹Р»Рѕ В«РїСЂРѕРїР°Р¶РёВ» РІС‹РґРµР»РµРЅРёСЏ.
             useEffect(() => {
                 if (selectedDate.getFullYear() !== viewMonth.getFullYear() || selectedDate.getMonth() !== viewMonth.getMonth()) {
                     setViewMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
@@ -1893,15 +1998,15 @@
                 <div className="space-y-6 animate-fadeIn">
                     <header className="pt-4 flex justify-between items-center">
                         <div>
-                            <p className={THEME.label}>Напоминания</p>
-                            <h1 className="text-3xl font-extrabold text-slate-800 mt-1">Дни рождения</h1>
+                            <p className={THEME.label}>РќР°РїРѕРјРёРЅР°РЅРёСЏ</p>
+                            <h1 className="text-3xl font-extrabold text-slate-800 mt-1">Р”РЅРё СЂРѕР¶РґРµРЅРёСЏ</h1>
                         </div>
                         <PressableScale onClick={() => openAdd(selectedDate)} className="bg-violet-500 p-3 rounded-2xl shadow-lg text-white">
                             <Icons.Plus className="w-6 h-6" />
                         </PressableScale>
                     </header>
 
-                    {/* Calendar (листать по месяцам) */}
+                    {/* Calendar (Р»РёСЃС‚Р°С‚СЊ РїРѕ РјРµСЃСЏС†Р°Рј) */}
                     <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-4">
                         <div className="flex items-center justify-between px-2">
                             <PressableScale onClick={goPrevMonth} className="p-2 rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-100">
@@ -1911,7 +2016,7 @@
                                 <div className="text-sm font-extrabold text-slate-900">
                                     {monthNames[viewMonth.getMonth()]} {viewMonth.getFullYear()}
                                 </div>
-                                <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Выберите дату</div>
+                                <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Р’С‹Р±РµСЂРёС‚Рµ РґР°С‚Сѓ</div>
                             </div>
                             <PressableScale onClick={goNextMonth} className="p-2 rounded-xl bg-slate-50 text-slate-500 hover:bg-slate-100">
                                 <Icons.ChevronRight className="w-5 h-5" />
@@ -1919,7 +2024,7 @@
                         </div>
 
                         <div className="grid grid-cols-7 gap-1 mt-4">
-                            {['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(w => (
+                            {['РџРЅ','Р’С‚','РЎСЂ','Р§С‚','РџС‚','РЎР±','Р’СЃ'].map(w => (
                                 <div key={w} className="h-7 flex items-center justify-center text-[10px] font-black text-slate-300 uppercase">{w}</div>
                             ))}
 
@@ -1962,7 +2067,7 @@
                                 onClick={() => openAdd(selectedDate)}
                                 className="text-sm font-bold text-slate-400 hover:text-slate-800 transition-colors bg-white px-3 py-1.5 rounded-full shadow-sm"
                             >
-                                + Добавить
+                                + Р”РѕР±Р°РІРёС‚СЊ
                             </button>
                         </div>
 
@@ -1978,7 +2083,7 @@
                                         {b.note && <p className="text-slate-500 text-sm mt-1">{b.note}</p>}
                                         {b.year && (
                                             <p className="text-xs text-slate-400 mt-2">
-                                                Исполнится {today.getFullYear() - b.year}
+                                                РСЃРїРѕР»РЅРёС‚СЃСЏ {today.getFullYear() - b.year}
                                             </p>
                                         )}
                                     </div>
@@ -1986,7 +2091,7 @@
                             )) : (
                                 <div className="flex flex-col items-center justify-center h-28 text-slate-300 border-2 border-dashed border-slate-100 rounded-3xl">
                                     <Icons.Gift className="w-10 h-10 mb-2 opacity-50" />
-                                    <p className="text-sm font-medium">На эту дату ничего нет</p>
+                                    <p className="text-sm font-medium">РќР° СЌС‚Сѓ РґР°С‚Сѓ РЅРёС‡РµРіРѕ РЅРµС‚</p>
                                 </div>
                             )}
                         </div>
@@ -1994,7 +2099,7 @@
 
                     {/* Closest birthdays this year */}
                     <section className="mt-6 pt-4 border-t border-slate-100">
-                        <p className={`${THEME.label} mb-3`}>Ближайшие в этом году</p>
+                        <p className={`${THEME.label} mb-3`}>Р‘Р»РёР¶Р°Р№С€РёРµ РІ СЌС‚РѕРј РіРѕРґСѓ</p>
                         <div className="space-y-2">
                             {closestThisYear.length > 0 ? closestThisYear.map(({ b, occ }) => {
                                 const daysLeft = Math.max(0, Math.round((startOfDay(occ).getTime() - startOfDay(today).getTime()) / 86400000));
@@ -2025,18 +2130,18 @@
                                                 <div className="font-bold text-slate-800">{b.name}</div>
                                                 <div className="text-xs text-slate-400 font-medium">
                                                     {occ.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })}
-                                                    {b.year ? ` • исполнится ${today.getFullYear() - b.year}` : ''}
+                                                    {b.year ? ` вЂў РёСЃРїРѕР»РЅРёС‚СЃСЏ ${today.getFullYear() - b.year}` : ''}
                                                 </div>
                                             </div>
                                         </div>
                                         <div className={`text-xs font-black px-2.5 py-1 rounded-full ${badge}`}>
-                                            {daysLeft === 0 ? 'Сегодня' : `через ${daysLeft} дн.`}
+                                            {daysLeft === 0 ? 'РЎРµРіРѕРґРЅСЏ' : `С‡РµСЂРµР· ${daysLeft} РґРЅ.`}
                                         </div>
                                     </PressableScale>
                                 );
                             }) : (
                                 <div className="text-sm text-slate-400 bg-slate-50 border border-slate-100 rounded-2xl p-4">
-                                    На этот год ближайших дней рождения больше нет.
+                                    РќР° СЌС‚РѕС‚ РіРѕРґ Р±Р»РёР¶Р°Р№С€РёС… РґРЅРµР№ СЂРѕР¶РґРµРЅРёСЏ Р±РѕР»СЊС€Рµ РЅРµС‚.
                                 </div>
                             )}
                         </div>
@@ -2048,7 +2153,7 @@
                             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setModalOpen(false)} />
                             <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-6 space-y-5 shadow-2xl relative animate-slideUp max-h-[90vh] overflow-y-auto">
                                 <div className="flex justify-between items-center">
-                                    <h2 className="text-2xl font-bold text-slate-900">{editingBirthday ? 'Редактирование' : 'Новый день рождения'}</h2>
+                                    <h2 className="text-2xl font-bold text-slate-900">{editingBirthday ? 'Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ' : 'РќРѕРІС‹Р№ РґРµРЅСЊ СЂРѕР¶РґРµРЅРёСЏ'}</h2>
                                     {editingBirthday && (
                                         <button onClick={handleDelete} className="bg-rose-50 p-3 rounded-full text-rose-500">
                                             <Icons.Trash className="w-5 h-5" />
@@ -2058,11 +2163,11 @@
 
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Имя</label>
+                                        <label className={THEME.label}>РРјСЏ</label>
                                         <input
                                             value={form.name}
                                             onChange={e => setForm({ ...form, name: e.target.value })}
-                                            placeholder="Напр: Оля"
+                                            placeholder="РќР°РїСЂ: РћР»СЏ"
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
                                             autoFocus
                                         />
@@ -2070,7 +2175,7 @@
 
                                     <div className="grid grid-cols-2 gap-3">
                                         <div className="space-y-2">
-                                            <label className={THEME.label}>День</label>
+                                            <label className={THEME.label}>Р”РµРЅСЊ</label>
                                             <input
                                                 type="number"
                                                 min="1"
@@ -2081,7 +2186,7 @@
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className={THEME.label}>Месяц</label>
+                                            <label className={THEME.label}>РњРµСЃСЏС†</label>
                                             <select
                                                 value={form.month}
                                                 onChange={e => setForm({ ...form, month: Number(e.target.value) })}
@@ -2095,22 +2200,22 @@
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Год (необязательно)</label>
+                                        <label className={THEME.label}>Р“РѕРґ (РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ)</label>
                                         <input
                                             type="number"
                                             value={form.year}
                                             onChange={e => setForm({ ...form, year: e.target.value })}
-                                            placeholder="Напр: 1995"
+                                            placeholder="РќР°РїСЂ: 1995"
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Заметка</label>
+                                        <label className={THEME.label}>Р—Р°РјРµС‚РєР°</label>
                                         <textarea
                                             value={form.note}
                                             onChange={e => setForm({ ...form, note: e.target.value })}
-                                            placeholder="Подарок, пожелания..."
+                                            placeholder="РџРѕРґР°СЂРѕРє, РїРѕР¶РµР»Р°РЅРёСЏ..."
                                             rows={3}
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 text-slate-800 outline-none resize-none"
                                         />
@@ -2119,7 +2224,7 @@
 
                                 <PressableScale onClick={handleSave} className="w-full pt-2">
                                     <div className="bg-violet-500 h-14 rounded-3xl flex items-center justify-center shadow-xl">
-                                        <span className="text-white font-bold text-lg">{editingBirthday ? 'Сохранить' : 'Создать'}</span>
+                                        <span className="text-white font-bold text-lg">{editingBirthday ? 'РЎРѕС…СЂР°РЅРёС‚СЊ' : 'РЎРѕР·РґР°С‚СЊ'}</span>
                                     </div>
                                 </PressableScale>
                             </div>
@@ -2129,19 +2234,19 @@
             );
         };
 
-        // --- Supplies Tab (Дом / Запасы) ---
+        // --- Supplies Tab (Р”РѕРј / Р—Р°РїР°СЃС‹) ---
         const SuppliesTab = () => {
             const [supplies, setSupplies] = useLocalStorage('lifehub_supplies', [
-                { id: '1', name: 'Молоко', category: 'Еда', inStock: true, price: 120, createdAt: Date.now() },
-                { id: '2', name: 'Хлеб', category: 'Еда', inStock: false, price: 60, createdAt: Date.now() },
-                { id: '3', name: 'Мыло', category: 'Гигиена', inStock: true, price: 90, createdAt: Date.now() },
-                { id: '4', name: 'Средство для пола', category: 'Уборка', inStock: false, price: 250, createdAt: Date.now() },
+                { id: '1', name: 'РњРѕР»РѕРєРѕ', category: 'Р•РґР°', inStock: true, price: 120, createdAt: Date.now() },
+                { id: '2', name: 'РҐР»РµР±', category: 'Р•РґР°', inStock: false, price: 60, createdAt: Date.now() },
+                { id: '3', name: 'РњС‹Р»Рѕ', category: 'Р“РёРіРёРµРЅР°', inStock: true, price: 90, createdAt: Date.now() },
+                { id: '4', name: 'РЎСЂРµРґСЃС‚РІРѕ РґР»СЏ РїРѕР»Р°', category: 'РЈР±РѕСЂРєР°', inStock: false, price: 250, createdAt: Date.now() },
             ]);
             const [isAddOpen, setAddOpen] = useState(false);
             const [showShoppingList, setShowShoppingList] = useState(false);
-            const [newItem, setNewItem] = useState({ name: '', category: 'Еда', price: '' });
+            const [newItem, setNewItem] = useState({ name: '', category: 'Р•РґР°', price: '' });
 
-            // миграция старых записей, где price отсутствовал
+            // РјРёРіСЂР°С†РёСЏ СЃС‚Р°СЂС‹С… Р·Р°РїРёСЃРµР№, РіРґРµ price РѕС‚СЃСѓС‚СЃС‚РІРѕРІР°Р»
             useEffect(() => {
                 if (!supplies || supplies.length === 0) return;
                 const needs = supplies.some(s => typeof s.price === 'undefined');
@@ -2149,20 +2254,20 @@
                 setSupplies(supplies.map(s => (typeof s.price === 'undefined' ? { ...s, price: null } : s)));
             }, []);
 
-            const categories = ['Еда', 'Уборка', 'Гигиена', 'Другое'];
+            const categories = ['Р•РґР°', 'РЈР±РѕСЂРєР°', 'Р“РёРіРёРµРЅР°', 'Р”СЂСѓРіРѕРµ'];
 
             const categoryIcons = {
-                'Еда': Icons.Apple,
-                'Уборка': Icons.Sparkle,
-                'Гигиена': Icons.Droplet,
-                'Другое': Icons.Package
+                'Р•РґР°': Icons.Apple,
+                'РЈР±РѕСЂРєР°': Icons.Sparkle,
+                'Р“РёРіРёРµРЅР°': Icons.Droplet,
+                'Р”СЂСѓРіРѕРµ': Icons.Package
             };
 
             const categoryColors = {
-                'Еда': { bg: 'bg-emerald-50', icon: 'bg-emerald-100', text: 'text-emerald-500' },
-                'Уборка': { bg: 'bg-sky-50', icon: 'bg-sky-100', text: 'text-sky-500' },
-                'Гигиена': { bg: 'bg-violet-50', icon: 'bg-violet-100', text: 'text-violet-500' },
-                'Другое': { bg: 'bg-slate-50', icon: 'bg-slate-100', text: 'text-slate-500' }
+                'Р•РґР°': { bg: 'bg-emerald-50', icon: 'bg-emerald-100', text: 'text-emerald-500' },
+                'РЈР±РѕСЂРєР°': { bg: 'bg-sky-50', icon: 'bg-sky-100', text: 'text-sky-500' },
+                'Р“РёРіРёРµРЅР°': { bg: 'bg-violet-50', icon: 'bg-violet-100', text: 'text-violet-500' },
+                'Р”СЂСѓРіРѕРµ': { bg: 'bg-slate-50', icon: 'bg-slate-100', text: 'text-slate-500' }
             };
 
             const outOfStockCount = supplies.filter(s => !s.inStock).length;
@@ -2199,7 +2304,7 @@
                     createdAt: Date.now()
                 };
                 setSupplies([item, ...supplies]);
-                setNewItem({ name: '', category: 'Еда', price: '' });
+                setNewItem({ name: '', category: 'Р•РґР°', price: '' });
                 setAddOpen(false);
             };
 
@@ -2213,8 +2318,8 @@
             return (
                 <div className="space-y-6 animate-fadeIn">
                     <header className="pt-4">
-                        <p className={THEME.label}>Запасы</p>
-                        <h1 className="text-3xl font-extrabold text-slate-800 mt-1">Дом</h1>
+                        <p className={THEME.label}>Р—Р°РїР°СЃС‹</p>
+                        <h1 className="text-3xl font-extrabold text-slate-800 mt-1">Р”РѕРј</h1>
                     </header>
 
                     {/* Control Panel */}
@@ -2226,7 +2331,7 @@
                             `}
                         >
                             <Icons.ShoppingCart className="w-5 h-5" />
-                            <span className="font-bold">Список покупок</span>
+                            <span className="font-bold">РЎРїРёСЃРѕРє РїРѕРєСѓРїРѕРє</span>
                             {outOfStockCount > 0 && (
                                 <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-bold
                                     ${showShoppingList ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-600'}
@@ -2250,14 +2355,14 @@
                             <BentoCard className="bg-gradient-to-br from-rose-50 to-rose-100/50 !p-4">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <div className="text-xs font-black uppercase tracking-widest text-rose-600">Итого на покупки</div>
-                                        <div className="text-2xl font-extrabold text-rose-700 mt-1">{outOfStockTotal.toLocaleString('ru-RU')} ₽</div>
+                                        <div className="text-xs font-black uppercase tracking-widest text-rose-600">РС‚РѕРіРѕ РЅР° РїРѕРєСѓРїРєРё</div>
+                                        <div className="text-2xl font-extrabold text-rose-700 mt-1">{outOfStockTotal.toLocaleString('ru-RU')} в‚Ѕ</div>
                                     </div>
                                     <div className="w-10 h-10 rounded-2xl bg-white/60 flex items-center justify-center text-rose-600">
                                         <Icons.ShoppingCart className="w-5 h-5" />
                                     </div>
                                 </div>
-                                <p className="text-sm text-rose-700/80 mt-2">Сумма считается по ценам товаров со статусом «Купить».</p>
+                                <p className="text-sm text-rose-700/80 mt-2">РЎСѓРјРјР° СЃС‡РёС‚Р°РµС‚СЃСЏ РїРѕ С†РµРЅР°Рј С‚РѕРІР°СЂРѕРІ СЃРѕ СЃС‚Р°С‚СѓСЃРѕРј В«РљСѓРїРёС‚СЊВ».</p>
                             </BentoCard>
                         )}
                     </div>
@@ -2265,7 +2370,7 @@
                     <div className="space-y-6">
                         {Object.entries(groupedSupplies).map(([category, items]) => {
                             const IconComponent = categoryIcons[category] || Icons.Package;
-                            const colors = categoryColors[category] || categoryColors['Другое'];
+                            const colors = categoryColors[category] || categoryColors['Р”СЂСѓРіРѕРµ'];
                             
                             return (
                                 <section key={category}>
@@ -2279,7 +2384,7 @@
                                     <div className="space-y-2">
                                         {items.map(item => {
                                             const ItemIcon = categoryIcons[item.category] || Icons.Package;
-                                            const itemColors = categoryColors[item.category] || categoryColors['Другое'];
+                                            const itemColors = categoryColors[item.category] || categoryColors['Р”СЂСѓРіРѕРµ'];
                                             
                                             return (
                                                 <div 
@@ -2307,12 +2412,12 @@
                                                             <div className="flex items-center gap-2 mt-1">
                                                                 {!item.inStock && (
                                                                     <span className="text-xs font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full">
-                                                                        Купить
+                                                                        РљСѓРїРёС‚СЊ
                                                                     </span>
                                                                 )}
                                                                 {typeof item.price === 'number' && Number.isFinite(item.price) && (
                                                                     <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                                                                        {item.price.toLocaleString('ru-RU')} ₽
+                                                                        {item.price.toLocaleString('ru-RU')} в‚Ѕ
                                                                     </span>
                                                                 )}
                                                             </div>
@@ -2321,7 +2426,7 @@
                                                     <div className="flex items-center gap-2">
                                                         {item.inStock && (
                                                             <span className="text-xs font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded-lg">
-                                                                Есть
+                                                                Р•СЃС‚СЊ
                                                             </span>
                                                         )}
                                                         <PressableScale 
@@ -2345,14 +2450,14 @@
                             {showShoppingList ? (
                                 <>
                                     <Icons.CheckCircle className="w-16 h-16 mb-4 opacity-50" />
-                                    <p className="font-medium">Всё куплено!</p>
-                                    <p className="text-sm">Список покупок пуст</p>
+                                    <p className="font-medium">Р’СЃС‘ РєСѓРїР»РµРЅРѕ!</p>
+                                    <p className="text-sm">РЎРїРёСЃРѕРє РїРѕРєСѓРїРѕРє РїСѓСЃС‚</p>
                                 </>
                             ) : (
                                 <>
                                     <Icons.Package className="w-16 h-16 mb-4 opacity-50" />
-                                    <p className="font-medium">Нет товаров</p>
-                                    <p className="text-sm">Добавьте первый товар</p>
+                                    <p className="font-medium">РќРµС‚ С‚РѕРІР°СЂРѕРІ</p>
+                                    <p className="text-sm">Р”РѕР±Р°РІСЊС‚Рµ РїРµСЂРІС‹Р№ С‚РѕРІР°СЂ</p>
                                 </>
                             )}
                         </div>
@@ -2364,8 +2469,8 @@
                             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setAddOpen(false)} />
                             <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-6 space-y-5 shadow-2xl relative animate-slideUp">
                                 <div className="flex justify-between items-center">
-                                    <h2 className="text-2xl font-bold text-slate-900">Новый товар</h2>
-                                <p className="text-sm text-slate-500">Можно указать цену — она попадёт в итог «Список покупок».</p>
+                                    <h2 className="text-2xl font-bold text-slate-900">РќРѕРІС‹Р№ С‚РѕРІР°СЂ</h2>
+                                <p className="text-sm text-slate-500">РњРѕР¶РЅРѕ СѓРєР°Р·Р°С‚СЊ С†РµРЅСѓ вЂ” РѕРЅР° РїРѕРїР°РґС‘С‚ РІ РёС‚РѕРі В«РЎРїРёСЃРѕРє РїРѕРєСѓРїРѕРєВ».</p>
                                     <button onClick={() => setAddOpen(false)} className="bg-slate-50 p-2 rounded-full text-slate-400">
                                         <Icons.X className="w-5 h-5" />
                                     </button>
@@ -2373,29 +2478,29 @@
 
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Название</label>
+                                        <label className={THEME.label}>РќР°Р·РІР°РЅРёРµ</label>
                                         <input
                                             value={newItem.name}
                                             onChange={e => setNewItem({ ...newItem, name: e.target.value })}
-                                            placeholder="Напр: Яйца"
+                                            placeholder="РќР°РїСЂ: РЇР№С†Р°"
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
                                             autoFocus
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Цена (₽)</label>
+                                        <label className={THEME.label}>Р¦РµРЅР° (в‚Ѕ)</label>
                                         <input
                                             type="number"
                                             value={newItem.price}
                                             onChange={e => setNewItem({ ...newItem, price: e.target.value })}
-                                            placeholder="Напр: 1000"
+                                            placeholder="РќР°РїСЂ: 1000"
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 font-mono text-xl font-bold text-slate-800 outline-none"
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Категория</label>
+                                        <label className={THEME.label}>РљР°С‚РµРіРѕСЂРёСЏ</label>
                                         <div className="grid grid-cols-2 gap-2">
                                             {categories.map(cat => {
                                                 const CatIcon = categoryIcons[cat];
@@ -2426,7 +2531,7 @@
 
                                 <PressableScale onClick={handleAdd} className="w-full pt-2">
                                     <div className="bg-sky-500 h-14 rounded-3xl flex items-center justify-center shadow-xl">
-                                        <span className="text-white font-bold text-lg">Добавить</span>
+                                        <span className="text-white font-bold text-lg">Р”РѕР±Р°РІРёС‚СЊ</span>
                                     </div>
                                 </PressableScale>
                             </div>
@@ -2436,7 +2541,7 @@
             );
         };
 
-        // --- Statistics Tab (бывшая "Главная") ---
+        // --- Statistics Tab (Р±С‹РІС€Р°СЏ "Р“Р»Р°РІРЅР°СЏ") ---
         const StatisticsTab = () => {
             const [totalBalance] = useLocalStorage('lifehub_balance', 125000);
             const [transactions] = useLocalStorage('lifehub_transactions', []);
@@ -2502,7 +2607,7 @@
                 (transactions || [])
                     .filter(t => t.type === 'expense' && txMonthKey(t) === currentMonthKey)
                     .forEach(t => {
-                        const c = t.category || 'Разное';
+                        const c = t.category || 'Р Р°Р·РЅРѕРµ';
                         stats[c] = (stats[c] || 0) + Number(t.amount || 0);
                     });
                 return Object.entries(stats)
@@ -2551,7 +2656,7 @@
 
             return (
                 <div className="space-y-6 animate-fadeIn pt-4">
-                    {/* Страница начинается сразу с карточек "Баланс" и "Расходы" (шапку убрали) */}
+                    {/* РЎС‚СЂР°РЅРёС†Р° РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃСЂР°Р·Сѓ СЃ РєР°СЂС‚РѕС‡РµРє "Р‘Р°Р»Р°РЅСЃ" Рё "Р Р°СЃС…РѕРґС‹" (С€Р°РїРєСѓ СѓР±СЂР°Р»Рё) */}
 
                     <div className="grid grid-cols-2 gap-4">
                         <BentoCard className="bg-gradient-to-br from-emerald-50 to-emerald-100/50">
@@ -2559,9 +2664,9 @@
                                 <div className="bg-emerald-100 p-2.5 rounded-xl">
                                     <Icons.Wallet className="w-5 h-5 text-emerald-600" />
                                 </div>
-                                <span className={THEME.label}>Баланс</span>
+                                <span className={THEME.label}>Р‘Р°Р»Р°РЅСЃ</span>
                             </div>
-                            <p className="text-2xl font-extrabold text-emerald-700">{Number(totalBalance).toLocaleString('ru-RU')} ₽</p>
+                            <p className="text-2xl font-extrabold text-emerald-700">{Number(totalBalance).toLocaleString('ru-RU')} в‚Ѕ</p>
                         </BentoCard>
 
                         <BentoCard className="bg-gradient-to-br from-rose-50 to-rose-100/50">
@@ -2569,16 +2674,16 @@
                                 <div className="bg-rose-100 p-2.5 rounded-xl">
                                     <Icons.TrendingDown className="w-5 h-5 text-rose-600" />
                                 </div>
-                                <span className={THEME.label}>Расходы</span>
+                                <span className={THEME.label}>Р Р°СЃС…РѕРґС‹</span>
                             </div>
-                            <p className="text-2xl font-extrabold text-rose-700">{Number(expensesCurrentMonth).toLocaleString('ru-RU')} ₽</p>
+                            <p className="text-2xl font-extrabold text-rose-700">{Number(expensesCurrentMonth).toLocaleString('ru-RU')} в‚Ѕ</p>
                         </BentoCard>
                     </div>
 
-                    {/* Ближайшие платежи/кредиты (оставляем) */}
+                    {/* Р‘Р»РёР¶Р°Р№С€РёРµ РїР»Р°С‚РµР¶Рё/РєСЂРµРґРёС‚С‹ (РѕСЃС‚Р°РІР»СЏРµРј) */}
                     {nearestCreditPayment && (
                         <section>
-                            <SectionHeader title="Ближайшие платежи" />
+                            <SectionHeader title="Р‘Р»РёР¶Р°Р№С€РёРµ РїР»Р°С‚РµР¶Рё" />
                             <BentoCard className="!p-4 flex gap-4 items-center">
                                 <div className="w-10 h-10 rounded-2xl bg-violet-50 flex items-center justify-center text-violet-600">
                                     <Icons.Landmark className="w-5 h-5" />
@@ -2590,25 +2695,25 @@
                                             {nearestCreditPayment.nextDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-slate-400 mt-1">Сумма: {Number(nearestCreditPayment.amount).toLocaleString('ru-RU')} ₽ • день месяца: {nearestCreditPayment.date}</p>
+                                    <p className="text-xs text-slate-400 mt-1">РЎСѓРјРјР°: {Number(nearestCreditPayment.amount).toLocaleString('ru-RU')} в‚Ѕ вЂў РґРµРЅСЊ РјРµСЃСЏС†Р°: {nearestCreditPayment.date}</p>
                                 </div>
                             </BentoCard>
                         </section>
                     )}
 
-                    {/* Новые виджеты аналитики */}
+                    {/* РќРѕРІС‹Рµ РІРёРґР¶РµС‚С‹ Р°РЅР°Р»РёС‚РёРєРё */}
                     <section>
-                        <SectionHeader title="Аналитика" />
+                        <SectionHeader title="РђРЅР°Р»РёС‚РёРєР°" />
 
-                        {/* Pie Chart + легенда */}
+                        {/* Pie Chart + Р»РµРіРµРЅРґР° */}
                         <BentoCard className="!p-4">
                             <div className="flex items-center justify-between mb-3">
                                 <div>
-                                    <p className={THEME.label}>Категории трат</p>
+                                    <p className={THEME.label}>РљР°С‚РµРіРѕСЂРёРё С‚СЂР°С‚</p>
                                     <p className="text-sm text-slate-500 font-medium">{today.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}</p>
                                 </div>
                                 <div className="text-xs font-black px-2.5 py-1 rounded-full bg-slate-50 text-slate-500">
-                                    {pieData.total > 0 ? `${expensesByCategory.length} кат.` : 'нет данных'}
+                                    {pieData.total > 0 ? `${expensesByCategory.length} РєР°С‚.` : 'РЅРµС‚ РґР°РЅРЅС‹С…'}
                                 </div>
                             </div>
 
@@ -2626,7 +2731,7 @@
                                             {Number(expensesCurrentMonth).toLocaleString('ru-RU')}
                                         </text>
                                         <text x="70" y="84" textAnchor="middle" className="fill-slate-400" style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2 }}>
-                                            ₽ / мес
+                                            в‚Ѕ / РјРµСЃ
                                         </text>
                                     </svg>
                                 </div>
@@ -2643,7 +2748,7 @@
                                                         <span className="text-sm font-bold text-slate-700 truncate">{c.name}</span>
                                                     </div>
                                                     <div className="flex items-baseline gap-2 shrink-0">
-                                                        <span className="text-sm font-bold text-slate-900">{Number(c.amount).toLocaleString('ru-RU')} ₽</span>
+                                                        <span className="text-sm font-bold text-slate-900">{Number(c.amount).toLocaleString('ru-RU')} в‚Ѕ</span>
                                                         <span className="text-[11px] font-black text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{pct}%</span>
                                                     </div>
                                                 </div>
@@ -2651,7 +2756,7 @@
                                         }) : (
                                             <div className="py-8 text-center text-slate-300">
                                                 <Icons.PieChart className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                                <p className="text-sm font-medium">Нет расходов за месяц</p>
+                                                <p className="text-sm font-medium">РќРµС‚ СЂР°СЃС…РѕРґРѕРІ Р·Р° РјРµСЃСЏС†</p>
                                             </div>
                                         )}
                                     </div>
@@ -2659,13 +2764,13 @@
                             </div>
                         </BentoCard>
 
-                        {/* Progress: Потрачено от бюджета */}
+                        {/* Progress: РџРѕС‚СЂР°С‡РµРЅРѕ РѕС‚ Р±СЋРґР¶РµС‚Р° */}
                         <BentoCard className="!p-4">
                             <div className="flex items-end justify-between mb-3">
                                 <div>
-                                    <p className={THEME.label}>Потрачено от бюджета</p>
+                                    <p className={THEME.label}>РџРѕС‚СЂР°С‡РµРЅРѕ РѕС‚ Р±СЋРґР¶РµС‚Р°</p>
                                     <p className="text-xl font-extrabold text-slate-800 mt-1">
-                                        {Number(expensesCurrentMonth).toLocaleString('ru-RU')} <span className="text-slate-300 text-base">/ {Number(monthLimit).toLocaleString('ru-RU')} ₽</span>
+                                        {Number(expensesCurrentMonth).toLocaleString('ru-RU')} <span className="text-slate-300 text-base">/ {Number(monthLimit).toLocaleString('ru-RU')} в‚Ѕ</span>
                                     </p>
                                 </div>
                                 <span className={`text-xs font-black px-2.5 py-1 rounded-full ${spentProgress >= 100 ? 'bg-rose-50 text-rose-600' : spentProgress >= 80 ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
@@ -2679,7 +2784,7 @@
                                 />
                             </div>
                             {spentProgress >= 100 && (
-                                <p className="text-xs text-rose-600 font-bold mt-2">Лимит бюджета превышен.</p>
+                                <p className="text-xs text-rose-600 font-bold mt-2">Р›РёРјРёС‚ Р±СЋРґР¶РµС‚Р° РїСЂРµРІС‹С€РµРЅ.</p>
                             )}
                         </BentoCard>
 
@@ -2688,8 +2793,8 @@
                             <BentoCard className="!p-4">
                                 <div className="flex items-center justify-between mb-3">
                                     <div>
-                                        <p className={THEME.label}>Лимиты по категориям</p>
-                                        <p className="text-sm text-slate-500 font-medium">Показываются только категории с лимитом</p>
+                                        <p className={THEME.label}>Р›РёРјРёС‚С‹ РїРѕ РєР°С‚РµРіРѕСЂРёСЏРј</p>
+                                        <p className="text-sm text-slate-500 font-medium">РџРѕРєР°Р·С‹РІР°СЋС‚СЃСЏ С‚РѕР»СЊРєРѕ РєР°С‚РµРіРѕСЂРёРё СЃ Р»РёРјРёС‚РѕРј</p>
                                     </div>
                                 </div>
 
@@ -2706,7 +2811,7 @@
                                                         <div className="min-w-0">
                                                             <p className="font-extrabold text-slate-800 truncate">{cat}</p>
                                                             <p className="text-xs text-slate-500 font-bold mt-1">
-                                                                {Number(spent).toLocaleString('ru-RU')} ₽ / {Number(lim).toLocaleString('ru-RU')} ₽
+                                                                {Number(spent).toLocaleString('ru-RU')} в‚Ѕ / {Number(lim).toLocaleString('ru-RU')} в‚Ѕ
                                                             </p>
                                                         </div>
                                                         <span className={`text-xs font-black px-2.5 py-1 rounded-full ${over ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-700'}`}>
@@ -2717,7 +2822,7 @@
                                                         <div className={`h-full rounded-full ${over ? 'bg-rose-400' : pct >= 80 ? 'bg-amber-400' : 'bg-emerald-400'}`} style={{ width: `${Math.min(100, pct)}%` }} />
                                                     </div>
                                                     {over && (
-                                                        <p className="text-xs text-rose-600 font-bold mt-2">Лимит превышен.</p>
+                                                        <p className="text-xs text-rose-600 font-bold mt-2">Р›РёРјРёС‚ РїСЂРµРІС‹С€РµРЅ.</p>
                                                     )}
                                                 </div>
                                             );
@@ -2730,31 +2835,31 @@
                         <BentoCard className="!p-4">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className={THEME.label}>Сравнение с прошлым месяцем</p>
-                                    <p className="text-sm text-slate-500 mt-1">{prevMonthDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })} → {today.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}</p>
+                                    <p className={THEME.label}>РЎСЂР°РІРЅРµРЅРёРµ СЃ РїСЂРѕС€Р»С‹Рј РјРµСЃСЏС†РµРј</p>
+                                    <p className="text-sm text-slate-500 mt-1">{prevMonthDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })} в†’ {today.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })}</p>
                                 </div>
                                 <div className={`text-xs font-black px-2.5 py-1 rounded-full ${compare.diff > 0 ? 'bg-rose-50 text-rose-600' : compare.diff < 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-500'}`}>
-                                    {compare.diff > 0 ? 'Больше' : compare.diff < 0 ? 'Меньше' : 'Ровно'}
+                                    {compare.diff > 0 ? 'Р‘РѕР»СЊС€Рµ' : compare.diff < 0 ? 'РњРµРЅСЊС€Рµ' : 'Р РѕРІРЅРѕ'}
                                 </div>
                             </div>
 
                             <div className="mt-3 grid grid-cols-2 gap-3">
                                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                    <p className={THEME.label}>Прошлый</p>
-                                    <p className="text-lg font-extrabold text-slate-800 mt-1">{Number(expensesPrevMonth).toLocaleString('ru-RU')} ₽</p>
+                                    <p className={THEME.label}>РџСЂРѕС€Р»С‹Р№</p>
+                                    <p className="text-lg font-extrabold text-slate-800 mt-1">{Number(expensesPrevMonth).toLocaleString('ru-RU')} в‚Ѕ</p>
                                 </div>
                                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                    <p className={THEME.label}>Текущий</p>
-                                    <p className="text-lg font-extrabold text-slate-800 mt-1">{Number(expensesCurrentMonth).toLocaleString('ru-RU')} ₽</p>
+                                    <p className={THEME.label}>РўРµРєСѓС‰РёР№</p>
+                                    <p className="text-lg font-extrabold text-slate-800 mt-1">{Number(expensesCurrentMonth).toLocaleString('ru-RU')} в‚Ѕ</p>
                                 </div>
                             </div>
 
                             <div className="mt-3 flex items-center justify-between">
                                 <p className="text-sm font-bold text-slate-700">
-                                    Разница: <span className={`${compare.diff > 0 ? 'text-rose-600' : compare.diff < 0 ? 'text-emerald-700' : 'text-slate-500'}`}>{compare.diff > 0 ? '+' : ''}{Number(compare.diff).toLocaleString('ru-RU')} ₽</span>
+                                    Р Р°Р·РЅРёС†Р°: <span className={`${compare.diff > 0 ? 'text-rose-600' : compare.diff < 0 ? 'text-emerald-700' : 'text-slate-500'}`}>{compare.diff > 0 ? '+' : ''}{Number(compare.diff).toLocaleString('ru-RU')} в‚Ѕ</span>
                                 </p>
                                 <p className="text-xs font-black text-slate-400 bg-slate-50 px-2.5 py-1 rounded-full">
-                                    {compare.pct === null ? '—' : `${compare.pct > 0 ? '+' : ''}${compare.pct}%`}
+                                    {compare.pct === null ? 'вЂ”' : `${compare.pct > 0 ? '+' : ''}${compare.pct}%`}
                                 </p>
                             </div>
                         </BentoCard>
@@ -2763,14 +2868,14 @@
             );
         };
 
-        // --- Home Tab (Важное): личная страница, заметки и жизненные цели ---
+        // --- Home Tab (Р’Р°Р¶РЅРѕРµ): Р»РёС‡РЅР°СЏ СЃС‚СЂР°РЅРёС†Р°, Р·Р°РјРµС‚РєРё Рё Р¶РёР·РЅРµРЅРЅС‹Рµ С†РµР»Рё ---
         const HomeTab = () => {
             const today = new Date();
             const today0 = startOfDay(today);
-            const timeGreeting = today.getHours() < 12 ? 'Доброе утро' : today.getHours() < 18 ? 'Добрый день' : 'Добрый вечер';
+            const timeGreeting = today.getHours() < 12 ? 'Р”РѕР±СЂРѕРµ СѓС‚СЂРѕ' : today.getHours() < 18 ? 'Р”РѕР±СЂС‹Р№ РґРµРЅСЊ' : 'Р”РѕР±СЂС‹Р№ РІРµС‡РµСЂ';
 
             // Editable greeting
-            const [customGreeting, setCustomGreeting] = useLocalStorage('lifehub_home_greeting', `${timeGreeting}! 👋`);
+            const [customGreeting, setCustomGreeting] = useLocalStorage('lifehub_home_greeting', `${timeGreeting}! рџ‘‹`);
             const [isEditingGreeting, setIsEditingGreeting] = useState(false);
             const [greetingDraft, setGreetingDraft] = useState(customGreeting);
 
@@ -2782,10 +2887,10 @@
                 else root.classList.remove('dark');
             }, [theme]);
 
-            // Notes (перенос из бывшей вкладки "Заметки")
+            // Notes (РїРµСЂРµРЅРѕСЃ РёР· Р±С‹РІС€РµР№ РІРєР»Р°РґРєРё "Р—Р°РјРµС‚РєРё")
             const [notes, setNotes] = useLocalStorage('lifehub_notes', [
-                { id: '1', title: 'Идеи', content: 'Сделать привычку читать 20 минут в день', color: 'bg-amber-100', createdAt: Date.now() },
-                { id: '2', title: 'Планы', content: 'Разобрать бюджет и обновить цели', color: 'bg-emerald-100', createdAt: Date.now() - 86400000 },
+                { id: '1', title: 'РРґРµРё', content: 'РЎРґРµР»Р°С‚СЊ РїСЂРёРІС‹С‡РєСѓ С‡РёС‚Р°С‚СЊ 20 РјРёРЅСѓС‚ РІ РґРµРЅСЊ', color: 'bg-amber-100', createdAt: Date.now() },
+                { id: '2', title: 'РџР»Р°РЅС‹', content: 'Р Р°Р·РѕР±СЂР°С‚СЊ Р±СЋРґР¶РµС‚ Рё РѕР±РЅРѕРІРёС‚СЊ С†РµР»Рё', color: 'bg-emerald-100', createdAt: Date.now() - 86400000 },
             ]);
             const [isNoteModalOpen, setNoteModalOpen] = useState(false);
             const [editingNote, setEditingNote] = useState(null);
@@ -2817,20 +2922,20 @@
                 setNoteModalOpen(false);
             };
 
-            // Achievements / Life goals (новый блок)
+            // Achievements / Life goals (РЅРѕРІС‹Р№ Р±Р»РѕРє)
             const [lifeGoals, setLifeGoals] = useLocalStorage('lifehub_life_goals', [
-                { id: 'lg1', title: 'Сделать чек-лист целей', done: true, createdAt: Date.now() - 3 * 86400000 },
-                { id: 'lg2', title: 'Нарисовать картину', done: false, createdAt: Date.now() - 2 * 86400000 },
-                { id: 'lg3', title: 'Пройти 10 000 шагов', done: false, createdAt: Date.now() - 86400000 },
+                { id: 'lg1', title: 'РЎРґРµР»Р°С‚СЊ С‡РµРє-Р»РёСЃС‚ С†РµР»РµР№', done: true, createdAt: Date.now() - 3 * 86400000 },
+                { id: 'lg2', title: 'РќР°СЂРёСЃРѕРІР°С‚СЊ РєР°СЂС‚РёРЅСѓ', done: false, createdAt: Date.now() - 2 * 86400000 },
+                { id: 'lg3', title: 'РџСЂРѕР№С‚Рё 10 000 С€Р°РіРѕРІ', done: false, createdAt: Date.now() - 86400000 },
             ]);
             const [isLifeGoalModalOpen, setLifeGoalModalOpen] = useState(false);
             const [editingLifeGoal, setEditingLifeGoal] = useState(null);
             const [lifeGoalDraft, setLifeGoalDraft] = useState('');
 
-            // Important reminders (новая функция)
+            // Important reminders (РЅРѕРІР°СЏ С„СѓРЅРєС†РёСЏ)
             const [reminders, setReminders] = useLocalStorage('lifehub_reminders', [
-                { id: 'r1', text: 'Позвонить родителям', createdAt: Date.now() - 3600_000 },
-                { id: 'r2', text: 'Записаться к врачу', createdAt: Date.now() - 7200_000 },
+                { id: 'r1', text: 'РџРѕР·РІРѕРЅРёС‚СЊ СЂРѕРґРёС‚РµР»СЏРј', createdAt: Date.now() - 3600_000 },
+                { id: 'r2', text: 'Р—Р°РїРёСЃР°С‚СЊСЃСЏ Рє РІСЂР°С‡Сѓ', createdAt: Date.now() - 7200_000 },
             ]);
             const [reminderDraft, setReminderDraft] = useState('');
             const addReminder = () => {
@@ -2841,13 +2946,13 @@
             };
             const deleteReminder = (id) => setReminders((reminders || []).filter(r => r.id !== id));
 
-            // Ideas (wishlist) — новый блок
-            const [ideasTitle] = useLocalStorage('lifehub_ideas_title', 'Идеи');
+            // Ideas (wishlist) вЂ” РЅРѕРІС‹Р№ Р±Р»РѕРє
+            const [ideasTitle] = useLocalStorage('lifehub_ideas_title', 'РРґРµРё');
 
             const [ideas, setIdeas] = useLocalStorage('lifehub_ideas', []);
             const [ideaDraft, setIdeaDraft] = useState('');
 
-            // миграция: если ранее в localStorage могли быть строки вместо объектов
+            // РјРёРіСЂР°С†РёСЏ: РµСЃР»Рё СЂР°РЅРµРµ РІ localStorage РјРѕРіР»Рё Р±С‹С‚СЊ СЃС‚СЂРѕРєРё РІРјРµСЃС‚Рѕ РѕР±СЉРµРєС‚РѕРІ
             useEffect(() => {
                 if (!Array.isArray(ideas) || ideas.length === 0) return;
                 const needs = ideas.some(x => typeof x === 'string');
@@ -2894,7 +2999,7 @@
             const doneCount = (lifeGoals || []).filter(g => g.done).length;
             const totalCount = (lifeGoals || []).length;
 
-            // Keep access to existing reminders (не удаляем функциональность)
+            // Keep access to existing reminders (РЅРµ СѓРґР°Р»СЏРµРј С„СѓРЅРєС†РёРѕРЅР°Р»СЊРЅРѕСЃС‚СЊ)
             const [birthdays] = useLocalStorage('lifehub_birthdays', []);
             const [bills] = useLocalStorage('lifehub_bills', []);
 
@@ -2938,12 +3043,12 @@
                         <div className="flex items-start justify-between gap-3">
                             {!isEditingGreeting ? (
                                 <div>
-                                    <p className={THEME.label}>Важное</p>
+                                    <p className={THEME.label}>Р’Р°Р¶РЅРѕРµ</p>
                                     <h1 className="text-3xl font-extrabold text-slate-800 leading-tight mt-1">{customGreeting}</h1>
                                 </div>
                             ) : (
                                 <div className="flex-1">
-                                    <p className={THEME.label}>Важное</p>
+                                    <p className={THEME.label}>Р’Р°Р¶РЅРѕРµ</p>
                                 </div>
                             )}
 
@@ -2952,7 +3057,7 @@
                                 <PressableScale
                                     onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                                     className="bg-white border border-slate-100 shadow-sm p-2.5 rounded-2xl text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors"
-                                    title={theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'}
+                                    title={theme === 'dark' ? 'РЎРІРµС‚Р»Р°СЏ С‚РµРјР°' : 'РўС‘РјРЅР°СЏ С‚РµРјР°'}
                                 >
                                     <Icons.Moon className="w-5 h-5" />
                                 </PressableScale>
@@ -2961,7 +3066,7 @@
                                     <PressableScale
                                         onClick={() => { setGreetingDraft(customGreeting); setIsEditingGreeting(true); }}
                                         className="bg-white border border-slate-100 shadow-sm p-2.5 rounded-2xl text-slate-400 hover:text-slate-700"
-                                        title="Изменить приветствие"
+                                        title="РР·РјРµРЅРёС‚СЊ РїСЂРёРІРµС‚СЃС‚РІРёРµ"
                                     >
                                         <Icons.Pencil className="w-4 h-4" />
                                     </PressableScale>
@@ -2976,7 +3081,7 @@
                                         value={greetingDraft}
                                         onChange={(e) => setGreetingDraft(e.target.value)}
                                         className="flex-1 bg-slate-50 rounded-2xl px-4 py-3 font-bold text-slate-800 outline-none"
-                                        placeholder="Введите заголовок..."
+                                        placeholder="Р’РІРµРґРёС‚Рµ Р·Р°РіРѕР»РѕРІРѕРє..."
                                         autoFocus
                                     />
                                     <PressableScale
@@ -2986,40 +3091,40 @@
                                             setIsEditingGreeting(false);
                                         }}
                                         className="px-4 py-3 rounded-2xl bg-emerald-500 text-white font-bold"
-                                        title="Сохранить"
+                                        title="РЎРѕС…СЂР°РЅРёС‚СЊ"
                                     >
                                         <Icons.Check className="w-5 h-5" />
                                     </PressableScale>
                                     <PressableScale
                                         onClick={() => { setIsEditingGreeting(false); setGreetingDraft(customGreeting); }}
                                         className="px-4 py-3 rounded-2xl bg-slate-100 text-slate-500 font-bold"
-                                        title="Отмена"
+                                        title="РћС‚РјРµРЅР°"
                                     >
                                         <Icons.X className="w-5 h-5" />
                                     </PressableScale>
                                 </div>
-                                <p className="text-xs text-slate-400 mt-3">Например: «Фокус на здоровье» или «Главное на сегодня».</p>
+                                <p className="text-xs text-slate-400 mt-3">РќР°РїСЂРёРјРµСЂ: В«Р¤РѕРєСѓСЃ РЅР° Р·РґРѕСЂРѕРІСЊРµВ» РёР»Рё В«Р“Р»Р°РІРЅРѕРµ РЅР° СЃРµРіРѕРґРЅСЏВ».</p>
                             </div>
                         )}
                     </header>
 
                     {/* Important reminders */}
                     <section>
-                        <SectionHeader title="Важные напоминания" />
+                        <SectionHeader title="Р’Р°Р¶РЅС‹Рµ РЅР°РїРѕРјРёРЅР°РЅРёСЏ" />
                         <BentoCard className="!p-4">
                             <div className="flex gap-2">
                                 <input
                                     value={reminderDraft}
                                     onChange={(e) => setReminderDraft(e.target.value)}
-                                    placeholder="Напр: Оплатить кредит"
+                                    placeholder="РќР°РїСЂ: РћРїР»Р°С‚РёС‚СЊ РєСЂРµРґРёС‚"
                                     className="flex-1 bg-slate-50 rounded-2xl px-4 py-3 font-bold text-slate-800 outline-none"
                                 />
                                 <PressableScale
                                     onClick={addReminder}
                                     className="px-4 py-3 rounded-2xl bg-slate-900 text-white font-bold"
-                                    title="Добавить"
+                                    title="Р”РѕР±Р°РІРёС‚СЊ"
                                 >
-                                    <span className="inline-flex items-center gap-2"><Icons.Plus className="w-4 h-4" />Добавить</span>
+                                    <span className="inline-flex items-center gap-2"><Icons.Plus className="w-4 h-4" />Р”РѕР±Р°РІРёС‚СЊ</span>
                                 </PressableScale>
                             </div>
 
@@ -3030,14 +3135,14 @@
                                         <button
                                             onClick={() => deleteReminder(r.id)}
                                             className="p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50"
-                                            title="Удалить"
+                                            title="РЈРґР°Р»РёС‚СЊ"
                                         >
                                             <Icons.X className="w-4 h-4" />
                                         </button>
                                     </div>
                                 )) : (
                                     <div className="py-6 text-center text-slate-300">
-                                        <p className="text-sm font-medium">Пока напоминаний нет</p>
+                                        <p className="text-sm font-medium">РџРѕРєР° РЅР°РїРѕРјРёРЅР°РЅРёР№ РЅРµС‚</p>
                                     </div>
                                 )}
                             </div>
@@ -3045,11 +3150,11 @@
                     </section>
 
                     <section>
-                        <SectionHeader title="Достижения / Цели" actionLabel="+" onAction={openAddLifeGoal} />
+                        <SectionHeader title="Р”РѕСЃС‚РёР¶РµРЅРёСЏ / Р¦РµР»Рё" actionLabel="+" onAction={openAddLifeGoal} />
                         <BentoCard className="!p-4">
                             <div className="flex items-center justify-between mb-3">
                                 <div>
-                                    <p className={THEME.label}>Прогресс</p>
+                                    <p className={THEME.label}>РџСЂРѕРіСЂРµСЃСЃ</p>
                                     <p className="text-lg font-extrabold text-slate-800">{doneCount} / {totalCount}</p>
                                 </div>
                                 <div className="text-xs font-black px-2.5 py-1 rounded-full bg-slate-50 text-slate-500">
@@ -3069,7 +3174,7 @@
                                             </div>
                                             <div>
                                                 <p className={`font-bold ${g.done ? 'text-slate-500 line-through' : 'text-slate-800'}`}>{g.title}</p>
-                                                <p className="text-xs text-slate-400">Нажмите, чтобы отметить</p>
+                                                <p className="text-xs text-slate-400">РќР°Р¶РјРёС‚Рµ, С‡С‚РѕР±С‹ РѕС‚РјРµС‚РёС‚СЊ</p>
                                             </div>
                                         </button>
                                         <div className="flex items-center gap-2">
@@ -3081,17 +3186,17 @@
                                 )) : (
                                     <div className="py-8 text-center text-slate-300">
                                         <Icons.Target className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                        <p className="text-sm font-medium">Добавьте первую цель</p>
+                                        <p className="text-sm font-medium">Р”РѕР±Р°РІСЊС‚Рµ РїРµСЂРІСѓСЋ С†РµР»СЊ</p>
                                     </div>
                                 )}
                             </div>
                         </BentoCard>
                     </section>
 
-                    {/* Ideas (Wishlist) — строго ниже "Достижения / Цели" и выше "Ближайшие дни рождения" */}
+                    {/* Ideas (Wishlist) вЂ” СЃС‚СЂРѕРіРѕ РЅРёР¶Рµ "Р”РѕСЃС‚РёР¶РµРЅРёСЏ / Р¦РµР»Рё" Рё РІС‹С€Рµ "Р‘Р»РёР¶Р°Р№С€РёРµ РґРЅРё СЂРѕР¶РґРµРЅРёСЏ" */}
                     <section>
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg font-bold text-slate-700">{ideasTitle || 'Идеи'}</h2>
+                            <h2 className="text-lg font-bold text-slate-700">{ideasTitle || 'РРґРµРё'}</h2>
                             <div className="text-[11px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-100">
                                 {Array.isArray(ideas) ? ideas.length : 0}
                             </div>
@@ -3108,13 +3213,13 @@
                                             addIdea();
                                         }
                                     }}
-                                    placeholder="Добавить идею..."
+                                    placeholder="Р”РѕР±Р°РІРёС‚СЊ РёРґРµСЋ..."
                                     className="flex-1 bg-slate-50 rounded-2xl px-4 py-3 font-bold text-slate-800 outline-none"
                                 />
                                 <PressableScale
                                     onClick={addIdea}
                                     className="w-12 h-12 rounded-2xl bg-slate-900 text-white font-bold flex items-center justify-center"
-                                    title="Добавить"
+                                    title="Р”РѕР±Р°РІРёС‚СЊ"
                                 >
                                     <Icons.Plus className="w-5 h-5" />
                                 </PressableScale>
@@ -3128,7 +3233,7 @@
                                             <button
                                                 onClick={() => deleteIdea(item.id)}
                                                 className="p-2 rounded-xl bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50"
-                                                title="Удалить"
+                                                title="РЈРґР°Р»РёС‚СЊ"
                                             >
                                                 <Icons.X className="w-4 h-4" />
                                             </button>
@@ -3136,16 +3241,16 @@
                                     ))
                                 ) : (
                                     <div className="py-8 text-center text-slate-300 border-2 border-dashed border-slate-100 rounded-3xl">
-                                        <p className="text-sm font-medium">Запиши идею для подарка или свидания...</p>
+                                        <p className="text-sm font-medium">Р—Р°РїРёС€Рё РёРґРµСЋ РґР»СЏ РїРѕРґР°СЂРєР° РёР»Рё СЃРІРёРґР°РЅРёСЏ...</p>
                                     </div>
                                 )}
                             </div>
                         </BentoCard>
                     </section>
 
-                    {/* Ближайшие дни рождения */}
+                    {/* Р‘Р»РёР¶Р°Р№С€РёРµ РґРЅРё СЂРѕР¶РґРµРЅРёСЏ */}
                     <section>
-                        <SectionHeader title="Ближайшие дни рождения" />
+                        <SectionHeader title="Р‘Р»РёР¶Р°Р№С€РёРµ РґРЅРё СЂРѕР¶РґРµРЅРёСЏ" />
                         <div className="space-y-3">
                             {upcomingBirthdays.length > 0 ? upcomingBirthdays.map(({ b, occ }) => {
                                 const daysLeft = Math.max(0, Math.round((startOfDay(occ).getTime() - startOfDay(today0).getTime()) / 86400000));
@@ -3166,12 +3271,12 @@
                                             <div className="flex items-center justify-between gap-3">
                                                 <h3 className="font-bold text-slate-800">{b.name}</h3>
                                                 <span className={`text-xs font-black px-2.5 py-1 rounded-full ${badge}`}>
-                                                    {daysLeft === 0 ? 'Сегодня' : `через ${daysLeft} дн.`}
+                                                    {daysLeft === 0 ? 'РЎРµРіРѕРґРЅСЏ' : `С‡РµСЂРµР· ${daysLeft} РґРЅ.`}
                                                 </span>
                                             </div>
                                             <p className="text-xs text-slate-400 mt-1">
                                                 {occ.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
-                                                {b.year ? ` • исполнится ${today0.getFullYear() - b.year}` : ''}
+                                                {b.year ? ` вЂў РёСЃРїРѕР»РЅРёС‚СЃСЏ ${today0.getFullYear() - b.year}` : ''}
                                             </p>
                                         </div>
                                     </BentoCard>
@@ -3179,7 +3284,7 @@
                             }) : (
                                 <div className="flex flex-col items-center justify-center h-32 text-slate-300 border-2 border-dashed border-slate-100 rounded-3xl">
                                     <Icons.Gift className="w-10 h-10 mb-2 opacity-50" />
-                                    <p className="text-sm font-medium">Нет ближайших дат</p>
+                                    <p className="text-sm font-medium">РќРµС‚ Р±Р»РёР¶Р°Р№С€РёС… РґР°С‚</p>
                                 </div>
                             )}
                         </div>
@@ -3187,9 +3292,9 @@
 
                     <section>
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg font-bold text-slate-700">Заметки</h2>
+                            <h2 className="text-lg font-bold text-slate-700">Р—Р°РјРµС‚РєРё</h2>
                             <PressableScale onClick={openAddNote} className="bg-amber-500 px-4 py-2 rounded-2xl text-white font-bold shadow-sm">
-                                <span className="inline-flex items-center gap-2"><Icons.Plus className="w-4 h-4" />Добавить</span>
+                                <span className="inline-flex items-center gap-2"><Icons.Plus className="w-4 h-4" />Р”РѕР±Р°РІРёС‚СЊ</span>
                             </PressableScale>
                         </div>
 
@@ -3208,7 +3313,7 @@
                         ) : (
                             <div className="flex flex-col items-center justify-center h-40 text-slate-300 border-2 border-dashed border-slate-100 rounded-3xl">
                                 <Icons.StickyNote className="w-12 h-12 mb-2 opacity-50" />
-                                <p className="text-sm font-medium">Нет заметок</p>
+                                <p className="text-sm font-medium">РќРµС‚ Р·Р°РјРµС‚РѕРє</p>
                             </div>
                         )}
                     </section>
@@ -3219,7 +3324,7 @@
                             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setNoteModalOpen(false)} />
                             <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-6 space-y-5 shadow-2xl relative animate-slideUp">
                                 <div className="flex justify-between items-center">
-                                    <h2 className="text-2xl font-bold text-slate-900">{editingNote ? 'Редактирование' : 'Новая заметка'}</h2>
+                                    <h2 className="text-2xl font-bold text-slate-900">{editingNote ? 'Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ' : 'РќРѕРІР°СЏ Р·Р°РјРµС‚РєР°'}</h2>
                                     {editingNote && (
                                         <button onClick={deleteNote} className="bg-rose-50 p-3 rounded-full text-rose-500">
                                             <Icons.Trash className="w-5 h-5" />
@@ -3229,27 +3334,27 @@
 
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Заголовок</label>
+                                        <label className={THEME.label}>Р—Р°РіРѕР»РѕРІРѕРє</label>
                                         <input
                                             value={noteForm.title}
                                             onChange={e => setNoteForm({ ...noteForm, title: e.target.value })}
-                                            placeholder="Название"
+                                            placeholder="РќР°Р·РІР°РЅРёРµ"
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
                                             autoFocus
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Содержание</label>
+                                        <label className={THEME.label}>РЎРѕРґРµСЂР¶Р°РЅРёРµ</label>
                                         <textarea
                                             value={noteForm.content}
                                             onChange={e => setNoteForm({ ...noteForm, content: e.target.value })}
-                                            placeholder="Текст..."
+                                            placeholder="РўРµРєСЃС‚..."
                                             rows={4}
                                             className="w-full bg-slate-50 rounded-2xl py-4 px-5 text-slate-800 outline-none resize-none"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className={THEME.label}>Цвет</label>
+                                        <label className={THEME.label}>Р¦РІРµС‚</label>
                                         <div className="flex gap-2">
                                             {noteColors.map(color => (
                                                 <button
@@ -3264,7 +3369,7 @@
 
                                 <PressableScale onClick={saveNote} className="w-full pt-2">
                                     <div className="bg-amber-500 h-14 rounded-3xl flex items-center justify-center shadow-xl">
-                                        <span className="text-white font-bold text-lg">{editingNote ? 'Сохранить' : 'Создать'}</span>
+                                        <span className="text-white font-bold text-lg">{editingNote ? 'РЎРѕС…СЂР°РЅРёС‚СЊ' : 'РЎРѕР·РґР°С‚СЊ'}</span>
                                     </div>
                                 </PressableScale>
                             </div>
@@ -3277,7 +3382,7 @@
                             <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onClick={() => setLifeGoalModalOpen(false)} />
                             <div className="bg-white w-full max-w-md mx-auto rounded-t-3xl p-6 space-y-5 shadow-2xl relative animate-slideUp">
                                 <div className="flex justify-between items-center">
-                                    <h2 className="text-2xl font-bold text-slate-900">{editingLifeGoal ? 'Редактирование' : 'Новая цель'}</h2>
+                                    <h2 className="text-2xl font-bold text-slate-900">{editingLifeGoal ? 'Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ' : 'РќРѕРІР°СЏ С†РµР»СЊ'}</h2>
                                     {editingLifeGoal && (
                                         <button onClick={deleteLifeGoal} className="bg-rose-50 p-3 rounded-full text-rose-500">
                                             <Icons.Trash className="w-5 h-5" />
@@ -3286,21 +3391,82 @@
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className={THEME.label}>Формулировка</label>
+                                    <label className={THEME.label}>Р¤РѕСЂРјСѓР»РёСЂРѕРІРєР°</label>
                                     <input
                                         value={lifeGoalDraft}
                                         onChange={(e) => setLifeGoalDraft(e.target.value)}
                                         className="w-full bg-slate-50 rounded-2xl py-4 px-5 font-bold text-slate-800 outline-none"
-                                        placeholder="Напр: Пробежать 5 км"
+                                        placeholder="РќР°РїСЂ: РџСЂРѕР±РµР¶Р°С‚СЊ 5 РєРј"
                                         autoFocus
                                     />
                                 </div>
 
                                 <PressableScale onClick={saveLifeGoal} className="w-full pt-2">
                                     <div className="bg-slate-900 h-14 rounded-3xl flex items-center justify-center shadow-xl">
-                                        <span className="text-white font-bold text-lg">Сохранить</span>
+                                        <span className="text-white font-bold text-lg">РЎРѕС…СЂР°РЅРёС‚СЊ</span>
                                     </div>
                                 </PressableScale>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // --- Sync Status Indicator ---
+        const SyncIndicator = () => {
+            const { syncStatus, lastSyncTime } = useData();
+            
+            if (syncStatus === 'idle' && !lastSyncTime) return null;
+            
+            const statusConfig = {
+                idle: { icon: null, text: '', bg: '' },
+                saving: { icon: Icons.Loader, text: 'РЎРѕС…СЂР°РЅРµРЅРёРµ...', bg: 'bg-amber-50 text-amber-700 border-amber-100' },
+                saved: { icon: Icons.CheckCircle, text: 'РЎРѕС…СЂР°РЅРµРЅРѕ', bg: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+                error: { icon: Icons.AlertTriangle, text: 'РћС€РёР±РєР° СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё', bg: 'bg-rose-50 text-rose-700 border-rose-100' }
+            };
+            
+            const config = statusConfig[syncStatus];
+            if (!config || syncStatus === 'idle') return null;
+            
+            const IconComponent = config.icon;
+            
+            return (
+                <div className={`fixed top-2 left-1/2 -translate-x-1/2 z-[100] px-4 py-2 rounded-full border shadow-lg flex items-center gap-2 text-xs font-bold ${config.bg} animate-fadeIn`}>
+                    {IconComponent && <IconComponent className="w-4 h-4" />}
+                    <span>{config.text}</span>
+                </div>
+            );
+        };
+        
+        // --- Debug Panel (РјРѕР¶РЅРѕ СЃРєСЂС‹С‚СЊ РІ РїСЂРѕРґР°РєС€РµРЅРµ) ---
+        const DebugPanel = () => {
+            const [isOpen, setIsOpen] = useState(false);
+            const { lastSyncTime } = useData();
+            
+            return (
+                <div className="fixed top-14 right-2 z-[100]">
+                    <button
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded-lg shadow-lg"
+                    >
+                        {isOpen ? 'вњ•' : 'Debug'}
+                    </button>
+                    
+                    {isOpen && (
+                        <div className="mt-2 bg-white border border-slate-200 rounded-xl p-3 shadow-xl text-xs w-64 max-h-80 overflow-auto">
+                            <div className="font-bold text-slate-800 mb-2">Debug Info</div>
+                            <div className="space-y-1 text-slate-600">
+                                <div><span className="font-bold">User ID:</span> {USER_ID}</div>
+                                <div><span className="font-bold">Telegram:</span> {window.Telegram?.WebApp ? 'Р”Р°' : 'РќРµС‚'}</div>
+                                <div><span className="font-bold">initDataUnsafe.user.id:</span> {window.Telegram?.WebApp?.initDataUnsafe?.user?.id || 'null'}</div>
+                                <div><span className="font-bold">РџРѕСЃР»РµРґРЅСЏСЏ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ:</span> {lastSyncTime ? lastSyncTime.toLocaleTimeString('ru-RU') : 'РЅРµС‚'}</div>
+                            </div>
+                            <div className="mt-3 pt-2 border-t border-slate-100">
+                                <div className="font-bold text-slate-800 mb-1">initDataUnsafe:</div>
+                                <pre className="text-[9px] bg-slate-50 p-2 rounded overflow-auto max-h-32">
+                                    {JSON.stringify(window.Telegram?.WebApp?.initDataUnsafe, null, 2) || 'null'}
+                                </pre>
                             </div>
                         </div>
                     )}
@@ -3313,40 +3479,42 @@
             const { loading, error } = useData();
             const [activeTab, setActiveTab] = useState('home');
 
-            // Показываем лоадер пока данные загружаются из Supabase
+            // РџРѕРєР°Р·С‹РІР°РµРј Р»РѕР°РґРµСЂ РїРѕРєР° РґР°РЅРЅС‹Рµ Р·Р°РіСЂСѓР¶Р°СЋС‚СЃСЏ РёР· Supabase
             if (loading) {
                 return (
                     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
                         <Icons.Loader className="w-12 h-12 text-slate-400 mb-4" />
-                        <p className="text-slate-500 font-bold">Загрузка данных...</p>
-                        <p className="text-slate-400 text-sm mt-2">Синхронизация с облаком</p>
+                        <p className="text-slate-500 font-bold">Р—Р°РіСЂСѓР·РєР° РґР°РЅРЅС‹С…...</p>
+                        <p className="text-slate-400 text-sm mt-2">РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ СЃ РѕР±Р»Р°РєРѕРј</p>
+                        <p className="text-slate-300 text-xs mt-4">User ID: {USER_ID}</p>
                     </div>
                 );
             }
 
-            // Показываем ошибку если не удалось загрузить
+            // РџРѕРєР°Р·С‹РІР°РµРј РѕС€РёР±РєСѓ РµСЃР»Рё РЅРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ
             if (error) {
                 return (
                     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
                         <Icons.AlertTriangle className="w-16 h-16 text-amber-500 mb-4" />
-                        <h1 className="text-xl font-bold text-slate-800 mb-2">Ошибка загрузки</h1>
+                        <h1 className="text-xl font-bold text-slate-800 mb-2">РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё</h1>
                         <p className="text-slate-500 text-center mb-4">{error}</p>
+                        <p className="text-slate-300 text-xs mb-4">User ID: {USER_ID}</p>
                         <button
                             onClick={() => window.location.reload()}
                             className="bg-slate-900 text-white px-6 py-3 rounded-full font-bold"
                         >
-                            Перезагрузить
+                            РџРµСЂРµР·Р°РіСЂСѓР·РёС‚СЊ
                         </button>
                     </div>
                 );
             }
 
-            // Tabs (ровно 4): Главная (Важное) → Бюджет → Статистика → Дом
+            // Tabs (СЂРѕРІРЅРѕ 4): Р“Р»Р°РІРЅР°СЏ (Р’Р°Р¶РЅРѕРµ) в†’ Р‘СЋРґР¶РµС‚ в†’ РЎС‚Р°С‚РёСЃС‚РёРєР° в†’ Р”РѕРј
             const tabs = [
-                { id: 'home', icon: Icons.Home, label: 'Главная' },
-                { id: 'budget', icon: Icons.Wallet, label: 'Бюджет' },
-                { id: 'stats', icon: Icons.PieChart, label: 'Статистика' },
-                { id: 'supplies', icon: Icons.Package, label: 'Дом' },
+                { id: 'home', icon: Icons.Home, label: 'Р“Р»Р°РІРЅР°СЏ' },
+                { id: 'budget', icon: Icons.Wallet, label: 'Р‘СЋРґР¶РµС‚' },
+                { id: 'stats', icon: Icons.PieChart, label: 'РЎС‚Р°С‚РёСЃС‚РёРєР°' },
+                { id: 'supplies', icon: Icons.Package, label: 'Р”РѕРј' },
             ];
 
             const renderTab = () => {
@@ -3361,14 +3529,20 @@
 
             return (
                 <ErrorBoundary>
-                    <div className="min-h-screen bg-slate-50">
-                        <main className="max-w-md mx-auto px-5 pb-28">
+                    <div className="min-h-screen bg-slate-50 w-full max-w-full overflow-x-hidden">
+                        {/* Sync Status Indicator */}
+                        <SyncIndicator />
+                        
+                        {/* Debug Panel (РјРѕР¶РЅРѕ СѓР±СЂР°С‚СЊ РІ РїСЂРѕРґР°РєС€РµРЅРµ) */}
+                        <DebugPanel />
+                        
+                        <main className="w-full max-w-md mx-auto px-4 sm:px-5 pb-28 overflow-x-hidden">
                             {renderTab()}
                         </main>
 
-                        {/* Bottom Navigation */}
-                        <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 px-4 pt-2 pb-6">
-                            <div className="max-w-md mx-auto flex justify-around">
+                        {/* Bottom Navigation - fixed for mobile */}
+                        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 px-2 pt-2 safe-bottom z-50" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.5rem)' }}>
+                            <div className="w-full max-w-md mx-auto flex justify-around items-center">
                                 {tabs.map(tab => {
                                     const isActive = activeTab === tab.id;
                                     const TabIcon = tab.icon;
@@ -3376,12 +3550,12 @@
                                         <PressableScale
                                             key={tab.id}
                                             onClick={() => setActiveTab(tab.id)}
-                                            className="flex flex-col items-center gap-1 py-2 px-2"
+                                            className="flex flex-col items-center gap-0.5 py-1.5 px-1 min-w-0 flex-1 no-select"
                                         >
                                             <div className={`p-2 rounded-xl transition-all ${isActive ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400'}`}>
                                                 <TabIcon className="w-5 h-5" />
                                             </div>
-                                            <span className={`text-[9px] font-bold uppercase tracking-wider ${isActive ? 'text-slate-900' : 'text-slate-400'}`}>
+                                            <span className={`text-[9px] font-bold uppercase tracking-wider truncate ${isActive ? 'text-slate-900' : 'text-slate-400'}`}>
                                                 {tab.label}
                                             </span>
                                         </PressableScale>
