@@ -69,6 +69,56 @@
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* =========================================================
+           Premium Dark Neon Aesthetic (theme variables)
+           ========================================================= */
+        :root {
+            --lh-bg: #f8fafc;
+            --lh-surface: #ffffff;
+            --lh-text: #0f172a;
+            --lh-text-muted: #64748b;
+            --lh-border: rgba(15, 23, 42, 0.08);
+            --lh-primary: #0f172a;
+            --lh-secondary: #3B82F6;
+        }
+        .dark {
+            --lh-bg: #09090b;
+            --lh-surface: #18181b;
+            --lh-text: #ffffff;
+            --lh-text-muted: #A1A1AA;
+            --lh-border: rgba(255,255,255, 0.08);
+            --lh-primary: #BEF264; /* neon lime */
+            --lh-secondary: #3B82F6; /* electric blue */
+        }
+
+        /* global surfaces */
+        .lh-bg { background: var(--lh-bg) !important; color: var(--lh-text) !important; }
+        .lh-surface { background: var(--lh-surface) !important; border: 1px solid var(--lh-border) !important; }
+        .lh-card { background: var(--lh-surface) !important; border: 1px solid var(--lh-border) !important; border-radius: 32px !important; }
+        .lh-text { color: var(--lh-text) !important; }
+        .lh-muted { color: var(--lh-text-muted) !important; }
+
+        /* glass nav */
+        .lh-glass-nav {
+            background: rgba(255, 255, 255, 0.70) !important;
+            border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .dark .lh-glass-nav {
+            background: rgba(24, 24, 27, 0.70) !important;
+            border-top: 1px solid rgba(255,255,255, 0.08) !important;
+        }
+        .lh-tab-active {
+            background: var(--lh-primary) !important;
+            color: #09090b !important;
+            box-shadow: 0 0 0 1px rgba(190,242,100,0.35), 0 10px 30px rgba(190,242,100,0.18), 0 0 18px rgba(190,242,100,0.35);
+        }
+        .lh-tab-inactive { color: var(--lh-text-muted) !important; }
+
+        /* =========================================================
+           Base layout fixes
+           ========================================================= */
         /* Фиксация размера окна и предотвращение горизонтального скролла */
         *, *::before, *::after { box-sizing: border-box; }
         html, body {
@@ -86,20 +136,23 @@
         body {
             min-height: 100%;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8fafc; /* slate-50, чтобы не просвечивал фон Telegram */
+            background: var(--lh-bg);
+            color: var(--lh-text);
         }
         #root {
             min-height: 100%;
             width: 100%;
             max-width: 100vw;
             overflow-x: hidden;
-            background: #f8fafc; /* фикс «чёрной половины экрана» на коротких вкладках */
+            background: var(--lh-bg);
+            color: var(--lh-text);
         }
 
         /* Корневой контейнер приложения должен всегда занимать весь экран */
         .app-container {
             min-height: var(--app-height, 100vh);
-            background: #f8fafc;
+            background: var(--lh-bg);
+            color: var(--lh-text);
         }
 
         /* Важно: контент пусть занимает хотя бы доступную высоту, иначе снизу виден фон окружения */
@@ -211,30 +264,23 @@
             animation: toastIn 200ms ease-out;
         }
 
-        /* --- Dark theme overrides (minimal but usable) --- */
-        .dark body { background-color: rgb(2 6 23); color: rgb(226 232 240); }
-
-        /* AI recipes styles removed (AI module disabled in Дом) */
-        .dark #root { background-color: rgb(2 6 23) !important; }
-        .dark .app-container { background-color: rgb(2 6 23) !important; }
-        .dark .bg-slate-50 { background-color: rgb(2 6 23) !important; }
-        .dark .bg-white { background-color: rgb(15 23 42) !important; }
-        .dark .bg-white\/90 { background-color: rgba(15, 23, 42, 0.9) !important; }
-        .dark .bg-white\/80 { background-color: rgba(15, 23, 42, 0.8) !important; }
-        .dark .border-slate-50 { border-color: rgb(30 41 59) !important; }
-        .dark .border-slate-100 { border-color: rgb(30 41 59) !important; }
-        .dark .border-slate-200 { border-color: rgb(51 65 85) !important; }
-        .dark .text-slate-900 { color: rgb(241 245 249) !important; }
-        .dark .text-slate-800 { color: rgb(226 232 240) !important; }
-        .dark .text-slate-700 { color: rgb(203 213 225) !important; }
-        .dark .text-slate-600 { color: rgb(148 163 184) !important; }
-        .dark .text-slate-500 { color: rgb(148 163 184) !important; }
-        .dark .text-slate-400 { color: rgb(100 116 139) !important; }
-        .dark .text-slate-300 { color: rgb(71 85 105) !important; }
-        .dark .bg-slate-100 { background-color: rgb(30 41 59) !important; }
-        .dark .bg-slate-200 { background-color: rgb(51 65 85) !important; }
+        /* --- Dark theme overrides (legacy) --- */
+        /* Большую часть цветов теперь задаём через CSS-переменные Premium Dark Neon. */
+        /* Оставляем минимум для совместимости со старыми tailwind-классами. */
         .dark .shadow-slate-100 { --tw-shadow-color: rgb(0 0 0 / 0.35) !important; }
         .dark .shadow-slate-200 { --tw-shadow-color: rgb(0 0 0 / 0.35) !important; }
+
+        /* Premium: card border + radius consistency */
+        .dark .border-slate-100 { border-color: rgba(255,255,255,0.08) !important; }
+        .dark .border-slate-200 { border-color: rgba(255,255,255,0.10) !important; }
+
+        /* Premium: ensure typical surfaces look correct even if tailwind classes remain */
+        .dark .bg-white { background-color: var(--lh-surface) !important; }
+        .dark .bg-slate-50 { background-color: var(--lh-bg) !important; }
+        .dark #root, .dark .app-container { background-color: var(--lh-bg) !important; }
+        .dark .text-slate-900, .dark .text-slate-800, .dark .text-slate-700 { color: var(--lh-text) !important; }
+        .dark .text-slate-600, .dark .text-slate-500, .dark .text-slate-400 { color: var(--lh-text-muted) !important; }
+        .dark .bg-slate-100, .dark .bg-slate-200 { background-color: rgba(255,255,255,0.06) !important; }
     </style>
 </head>
 <body>
@@ -616,8 +662,9 @@
 
         // --- Design System ---
         const THEME = {
-            card: 'bg-white rounded-3xl border border-slate-100 shadow-lg shadow-slate-100',
-            label: 'text-xs font-bold uppercase tracking-widest text-slate-400'
+            // Под Premium Dark Neon: используем CSS-переменные/классы
+            card: 'lh-card shadow-[0_18px_60px_rgba(0,0,0,0.35)]',
+            label: 'text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-400'
         };
 
         // --- Components ---
@@ -6363,7 +6410,7 @@
             // Показываем лоадер пока данные загружаются из Supabase
             if (loading) {
                 return (
-                    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
+                    <div className="min-h-screen lh-bg flex flex-col items-center justify-center">
                         <Icons.Loader className="w-12 h-12 text-slate-400 mb-4" />
                         <p className="text-slate-500 font-bold">Загрузка данных...</p>
                         <p className="text-slate-400 text-sm mt-2">Синхронизация с облаком</p>
@@ -6375,7 +6422,7 @@
             // Показываем ошибку если не удалось загрузить
             if (error) {
                 return (
-                    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+                    <div className="min-h-screen lh-bg flex flex-col items-center justify-center p-6">
                         <Icons.AlertTriangle className="w-16 h-16 text-amber-500 mb-4" />
                         <h1 className="text-xl font-bold text-slate-800 mb-2">Ошибка загрузки</h1>
                         <p className="text-slate-500 text-center mb-4">{error}</p>
@@ -6410,7 +6457,7 @@
 
             return (
                 <ErrorBoundary>
-                    <div className="app-container bg-slate-50">
+                    <div className="app-container lh-bg">
                         {/* Sync Status Indicator */}
                         <SyncIndicator />
                         
@@ -6423,7 +6470,7 @@
                         </main>
 
                         {/* Bottom Navigation - fixed at very bottom, z-index ниже модалок */}
-                        <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-xl border-t border-slate-100 safe-bottom px-2 pt-2" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
+                        <nav className="fixed bottom-0 left-0 right-0 z-40 lh-glass-nav safe-bottom px-2 pt-2" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
                             <div className="w-full max-w-md mx-auto flex justify-around items-center h-full">
                                 {tabs.map(tab => {
                                     const isActive = activeTab === tab.id;
@@ -6434,10 +6481,10 @@
                                             onClick={() => setActiveTab(tab.id)}
                                             className="flex flex-col items-center gap-0.5 py-1.5 px-1 min-w-0 flex-1 no-select"
                                         >
-                                            <div className={`p-2 rounded-xl transition-all ${isActive ? 'bg-slate-900 text-white shadow-lg' : 'text-slate-400'}`}>
+                                            <div className={`p-2 rounded-xl transition-all ${isActive ? 'lh-tab-active' : 'lh-tab-inactive'}`}>
                                                 <TabIcon className="w-5 h-5" />
                                             </div>
-                                            <span className={`text-[9px] font-bold uppercase tracking-wider truncate ${isActive ? 'text-slate-900' : 'text-slate-400'}`}>
+                                            <span className={`text-[9px] font-bold uppercase tracking-wider truncate ${isActive ? 'lh-text' : 'lh-tab-inactive'}`}>
                                                 {tab.label}
                                             </span>
                                         </PressableScale>
