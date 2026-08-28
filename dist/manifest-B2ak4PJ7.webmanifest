@@ -1,0 +1,34 @@
+{
+  "name": "LifeHub",
+  "short_name": "LifeHub",
+  "description": "Личный центр для финансов, событий, заметок, целей и дома.",
+  "lang": "ru",
+  "start_url": "/standalone.html",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  "background_color": "#f7f4ed",
+  "theme_color": "#f7f4ed",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/lifehub-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "finance", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Финансы",
+      "url": "/standalone.html#finance",
+      "description": "Открыть финансовый раздел"
+    },
+    {
+      "name": "Цели",
+      "url": "/standalone.html#goals",
+      "description": "Открыть цели"
+    }
+  ]
+}
